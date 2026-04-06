@@ -290,5 +290,17 @@ nav{background:var(--navy);padding:0 1.25rem;display:flex;align-items:center;jus
 const d = new Date();
 document.getElementById('navDate').textContent = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 </script>
-</body>
+<script>
+// Wire up bottom nav
+(function() {
+  var links = ['index.html','invoice.html','expenses.html','tax.html','pricing.html'];
+  var items = document.querySelectorAll('.bottom-nav .nav-item');
+  items.forEach(function(item, i) {
+    item.style.cursor = 'pointer';
+    item.addEventListener('click', function() {
+      window.location.href = links[i];
+    });
+  });
+})();
+</script></body>
 </html>
