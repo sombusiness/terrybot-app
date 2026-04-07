@@ -141,6 +141,12 @@ input:checked + .toggle-slider:before{transform:translateX(20px)}
 .success-badge{display:inline-block;background:var(--green-light);color:var(--green);font-size:13px;font-weight:800;padding:6px 18px;border-radius:999px;margin-bottom:1.5rem}
 
 .hidden{display:none!important}
+.bottom-nav{background:white;border-top:1.5px solid #E5E7EB;padding:0.6rem 0 0.5rem;display:flex;justify-content:space-around;position:fixed;bottom:0;left:0;right:0;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 16px;border-radius:10px;transition:all 0.15s}
+.nav-item.active{background:#FEF9E7}
+.nav-icon{font-size:22px}
+.nav-item-label{font-size:10px;font-weight:800;color:#6B7280}
+.nav-item.active .nav-item-label{color:#1B2B4B}
 </style>
 </head>
 <body>
@@ -633,12 +639,22 @@ document.getElementById('invDate').value = new Date().toISOString().split('T')[0
 updateTotals();
 </script>
 
-<div class="bottom-nav">
+
+</div><div class="bottom-nav">
   <div class="nav-item" onclick="window.location.href='index.html'"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
   <div class="nav-item active" onclick="window.location.href='invoice.html'"><div class="nav-icon">📋</div><div class="nav-item-label">Invoices</div></div>
   <div class="nav-item" onclick="window.location.href='expenses.html'"><div class="nav-icon">💰</div><div class="nav-item-label">Expenses</div></div>
   <div class="nav-item" onclick="window.location.href='tax.html'"><div class="nav-icon">📊</div><div class="nav-item-label">Tax</div></div>
   <div class="nav-item" onclick="window.location.href='pricing.html'"><div class="nav-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
 </div>
-</div></body>
+
+<script>
+// Wire up bottom nav
+(function(){
+  var links=["index.html","invoice.html","expenses.html","tax.html","pricing.html"];
+  var items=document.querySelectorAll(".bottom-nav .nav-item");
+  items.forEach(function(item,i){item.style.cursor="pointer";item.addEventListener("click",function(){window.location.href=links[i];});});
+})();
+</script>
+</body>
 </html>
