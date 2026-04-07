@@ -126,7 +126,7 @@ nav{background:var(--navy);padding:0 1.25rem;display:flex;align-items:center;jus
 <body>
 
 <nav>
-  <div class="nav-left">
+  <div class="nav-left" onclick="window.location.href='index.html'" style="cursor:pointer">
     <div class="nav-logo">T</div>
     <div>
       <div class="nav-brand">Terry<span>Bot</span></div>
@@ -208,7 +208,7 @@ nav{background:var(--navy);padding:0 1.25rem;display:flex;align-items:center;jus
   <div class="jobs-card">
     <div class="jobs-header">
       <span>Recent jobs</span>
-      <span class="see-all">See all →</span>
+      <span class="see-all" onclick="window.location.href='jobs.html'" style="cursor:pointer">See all →</span>
     </div>
     <div class="job-row">
       <div class="job-dot dot-green"></div>
@@ -284,11 +284,13 @@ nav{background:var(--navy);padding:0 1.25rem;display:flex;align-items:center;jus
   <div class="nav-item" onclick="window.location.href='expenses.html'"><div class="nav-icon">💰</div><div class="nav-item-label">Expenses</div></div>
   <div class="nav-item" onclick="window.location.href='tax.html'"><div class="nav-icon">📊</div><div class="nav-item-label">Tax</div></div>
   <div class="nav-item" onclick="window.location.href='pricing.html'"><div class="nav-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
+</div></div>
 </div>
 
 <script>
 const d = new Date();
-document.getElementById('navDate').textContent = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+const nd = document.getElementById('navDate');
+if(nd) nd.textContent = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 </script>
 <script>
 // Wire up bottom nav
