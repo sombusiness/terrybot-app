@@ -217,7 +217,7 @@ function filterJobs() {
         ? '<button class="job-action-btn primary">Chase payment</button><button class="job-action-btn">View PDF</button>'
         : '<button class="job-action-btn primary">Send invoice</button><button class="job-action-btn">View PDF</button>';
       return `
-        <div class="job-card" onclick="window.location.href='invoice-view.html?id=${{j.id}}'">
+        <div class="job-card" onclick="window.location.href='invoice-view.html?id=${j.id}'">
           <div class="job-card-top">
             <div>
               <div class="job-name">${j.name}</div>
