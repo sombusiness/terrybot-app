@@ -170,7 +170,7 @@
 
 <script src="js/app.js"></script>
 <script>
-const STRIPE_PK     = 'pk_test_51TL0ea3kbnQPWj10C3oHEN7naPwsRs3jwRZ5r4mBATHl1PR8a8ufMqJTT0RGKw9Jvl6DmIwZJV7av92m64zJNL5f00NFWnXTf7';
+const STRIPE_PK     = 'pk_live_51TL0eJ3VZo2TAObPOwruVCpMyIgJuHkyjpLj3DRZwcUJI7bycqbWX1GuywLS91leHx5PtRidP5eVysDvdn7ewyXw00zOBADym2';
 const PRICE_MONTHLY = 'price_1TL0kf3kbnQPWj1025w22S99';
 const PRICE_ANNUAL  = 'price_1TL0mR3kbnQPWj103PBhDUzJ';
 const stripe        = Stripe(STRIPE_PK);
@@ -232,8 +232,8 @@ function handleSubscribe() {
 
   // Use Stripe Payment Links - no domain whitelisting needed
   // Replace these with your actual Payment Link URLs from Stripe Dashboard
-  const LINK_MONTHLY = 'https://buy.stripe.com/test_00wcMYa08av447T1bM3wQ00';
-  const LINK_ANNUAL  = 'https://buy.stripe.com/test_5kQeV6gowcDceMxbQq3wQ01';
+  const LINK_MONTHLY = 'https://buy.stripe.com/00wcMYa08av447T1bM3wQ00';
+  const LINK_ANNUAL  = 'https://buy.stripe.com/5kQeV6gowcDceMxbQq3wQ01';
 
   const link = billingCycle === 'annual' ? LINK_ANNUAL : LINK_MONTHLY;
 
