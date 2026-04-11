@@ -12,9 +12,9 @@ const ASSETS = [
   '/settings.html',
   '/css/styles.css',
   '/js/app.js',
-  '/images/terry-invoice.png',
-  '/images/terry-standing.png',
-  '/images/terry-thumbsup.png',
+  '/images/terry-invoice-v2.png',
+  '/images/terry-standing-v2.png',
+  '/images/terry-thumbsup-v2.png',
   '/images/icon-192.png',
   '/images/icon-512.png',
   '/manifest.json'

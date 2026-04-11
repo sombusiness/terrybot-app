@@ -33,7 +33,7 @@
       <p id="heroMsg"></p>
     </div>
     <div class="terry-hero-img">
-      <img id="terryImg" src="images/terry-invoice.png" alt="Terry"/>
+      <img id="terryImg" src="images/terry-invoice-v2.png" alt="Terry"/>
     </div>
   </div>
 
@@ -139,20 +139,20 @@ function buildPage() {
     badge.className = 'terry-hero-badge paid';
     title.textContent = 'Payment received!';
     msg.innerHTML = 'Lovely stuff! <strong>' + job.name + '</strong> has paid up. Here\'s the full invoice record.';
-    terry.src = 'images/terry-thumbsup.png';
+    terry.src = 'images/terry-thumbsup-v2.png';
   } else if (job.status === 'overdue') {
     badge.textContent = '⚠ Overdue';
     badge.className = 'terry-hero-badge overdue';
     const daysOver = Math.max(0, Math.floor((new Date() - new Date(job.due.split(' ').reverse().join('-'))) / 86400000));
     title.textContent = job.name + ' hasn\'t paid!';
     msg.innerHTML = 'This is <strong>' + daysOver + ' days overdue.</strong> Send a friendly reminder — most people just forget!';
-    terry.src = 'images/terry-invoice.png';
+    terry.src = 'images/terry-invoice-v2.png';
   } else {
     badge.textContent = '⏳ Pending';
     badge.className = 'terry-hero-badge pending';
     title.textContent = 'Waiting on payment';
     msg.innerHTML = 'Invoice sent to <strong>' + job.name + '.</strong> Payment due ' + job.due + '.';
-    terry.src = 'images/terry-invoice.png';
+    terry.src = 'images/terry-invoice-v2.png';
   }
 
   // Invoice details
