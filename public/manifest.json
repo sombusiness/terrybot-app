@@ -1,0 +1,26 @@
+{
+  "name": "TerryBot — Trade invoices & tax made easy",
+  "short_name": "TerryBot",
+  "description": "Your AI-powered business assistant for UK tradesmen. Invoices, expenses, and tax — sorted.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1B2B4B",
+  "theme_color": "#1B2B4B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance"],
+  "lang": "en-GB"
+}
