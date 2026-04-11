@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
+<script src="https://js.stripe.com/v3/"></script>
 <meta name="theme-color" content="#1B2B4B"/>
 <style>
 .faq-item{border-bottom:1px solid var(--border)}
@@ -16,6 +17,11 @@
 .faq-item.open .faq-chevron{transform:rotate(180deg)}
 .faq-answer{font-size:13px;font-weight:600;color:var(--muted);line-height:1.7;padding:0 1.25rem 1rem;display:none}
 .faq-item.open .faq-answer{display:block}
+.loading-overlay{position:fixed;inset:0;background:rgba(27,43,75,0.88);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.8s linear infinite}
+.loading-text{color:white;font-size:15px;font-weight:700}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -31,7 +37,6 @@
   <div class="nav-back" onclick="window.location.href='index.html'">← Dashboard</div>
 </nav>
 
-<!-- TERRY HERO -->
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-content">
@@ -40,7 +45,7 @@
       <p class="hero-sub">Built for blokes with vans, not briefcases. <strong>No contracts. Cancel any time.</strong></p>
     </div>
     <div class="hero-image">
-      <img src="images/terry-thumbsup-v2.png" alt="Terry thumbs up"/>
+      <img src="images/terry-thumbsup.png" alt="Terry thumbs up"/>
     </div>
   </div>
 </div>
@@ -49,22 +54,19 @@
 
   <!-- BILLING TOGGLE -->
   <div class="billing-toggle" style="margin-top:1.25rem">
-    <span class="billing-toggle-label" id="labelMonthly" style="color:var(--navy)">Monthly</span>
+    <span class="billing-toggle-label active" id="labelMonthly">Monthly</span>
     <label class="toggle-switch" style="width:52px;height:30px">
       <input type="checkbox" id="billingToggle" onchange="toggleBilling(this)"/>
       <span class="toggle-slider"></span>
     </label>
     <span class="billing-toggle-label" id="labelAnnual">Annual</span>
-    <span class="save-badge" id="saveBadge" style="display:none">Save £33.89!</span>
+    <span class="save-badge hidden" id="saveBadge">Save £33.89!</span>
   </div>
 
-  <!-- PLAN CARDS -->
-  <div class="plan-card" id="cardFree" onclick="selectPlan('free')" style="cursor:pointer">
+  <!-- FREE PLAN -->
+  <div class="plan-card" id="cardFree" onclick="selectPlan('free')">
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <div>
-        <div class="plan-name">Free</div>
-        <div class="plan-desc">Try before you buy</div>
-      </div>
+      <div><div class="plan-name">Free</div><div class="plan-desc">Try before you buy</div></div>
       <div class="plan-radio" id="radioFree"><div class="plan-radio-dot"></div></div>
     </div>
     <div style="margin-top:1rem">
@@ -79,19 +81,17 @@
     </div>
   </div>
 
-  <div class="plan-card featured" id="cardPro" onclick="selectPlan('pro')" style="cursor:pointer;margin-top:1.5rem">
+  <!-- PRO PLAN -->
+  <div class="plan-card featured selected" id="cardPro" onclick="selectPlan('pro')" style="margin-top:1.5rem">
     <div class="popular-badge">⭐ Most popular</div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
-      <div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-desc" id="proDesc">Everything you need</div>
-      </div>
+      <div><div class="plan-name">Pro</div><div class="plan-desc">Everything you need</div></div>
       <div class="plan-radio selected" id="radioPro"><div class="plan-radio-dot"></div></div>
     </div>
     <div style="margin-top:1rem">
       <div class="plan-amount" id="proPrice">£6.99 <span>/mo</span></div>
       <div class="plan-period" id="proPeriod">Billed monthly · cancel any time</div>
-      <div class="plan-saving hidden" id="proSaving"></div>
+      <div class="plan-saving hidden" id="proSaving">That's just £4.17/month!</div>
     </div>
     <div style="margin-top:1rem;display:flex;flex-direction:column;gap:8px">
       <div class="feature-row"><div class="feature-tick">✓</div><strong>Unlimited invoices</strong></div>
@@ -100,39 +100,38 @@
       <div class="feature-row"><div class="feature-tick">✓</div>Tax summary &amp; HMRC checklist</div>
       <div class="feature-row"><div class="feature-tick">✓</div>WhatsApp invoice sharing</div>
       <div class="feature-row"><div class="feature-tick">✓</div>Receipt photo upload</div>
-      <div class="feature-row"><div class="feature-tick">✓</div>Settings &amp; business profile</div>
+      <div class="feature-row"><div class="feature-tick">✓</div>Business profile &amp; settings</div>
       <div class="feature-row"><div class="feature-tick">✓</div>Works offline (PWA)</div>
     </div>
   </div>
 
-  <!-- CTA BUTTON -->
+  <!-- CTA -->
   <button class="btn btn-yellow btn-full" id="ctaBtn" style="margin-top:1.25rem;font-size:16px;padding:16px" onclick="handleSubscribe()">
-    Get TerryBot Pro →
+    Get TerryBot Pro — £6.99/mo →
   </button>
-  <div style="text-align:center;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:1.5rem">No contracts · Cancel any time · Stripe secure checkout</div>
 
-  <!-- TRUST BADGES -->
+  <div style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:1.5rem">
+    🔒 Secure checkout by Stripe &nbsp;·&nbsp; No contracts &nbsp;·&nbsp; Cancel any time
+  </div>
+
+  <!-- TRUST -->
   <div class="trust-row">
-    <div class="trust-item">
-      <div class="trust-icon">🔒</div>
-      <div class="trust-label">Secure</div>
-      <div class="trust-sub">Stripe payments</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-icon">🇬🇧</div>
-      <div class="trust-label">UK built</div>
-      <div class="trust-sub">HMRC compliant</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-icon">❌</div>
-      <div class="trust-label">No contract</div>
-      <div class="trust-sub">Cancel any time</div>
-    </div>
+    <div class="trust-item"><div class="trust-icon">🔒</div><div class="trust-label">Secure</div><div class="trust-sub">Stripe checkout</div></div>
+    <div class="trust-item"><div class="trust-icon">🇬🇧</div><div class="trust-label">UK built</div><div class="trust-sub">HMRC compliant</div></div>
+    <div class="trust-item"><div class="trust-icon">❌</div><div class="trust-label">No contract</div><div class="trust-sub">Cancel any time</div></div>
   </div>
 
   <!-- FAQ -->
   <div class="section-title">Frequently asked questions</div>
   <div class="jobs-card" id="faqList" style="margin-bottom:1.5rem"></div>
+
+  <!-- LEGAL -->
+  <div style="text-align:center;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:1.5rem;line-height:2">
+    By subscribing you agree to our
+    <a href="terms.html" style="color:var(--navy)">Terms &amp; Conditions</a>
+    and
+    <a href="privacy.html" style="color:var(--navy)">Privacy Policy</a>
+  </div>
 
   <div class="disclaimer">
     TerryBot is a <strong>helper tool, not a tax advisor.</strong><br/>
@@ -143,69 +142,51 @@
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
-  <div class="nav-item"><div class="nav-icon">📋</div><div class="nav-item-label">Invoices</div></div>
-  <div class="nav-item"><div class="nav-icon">💰</div><div class="nav-item-label">Expenses</div></div>
-  <div class="nav-item"><div class="nav-icon">📊</div><div class="nav-item-label">Tax</div></div>
-  <div class="nav-item active"><div class="nav-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
+  <div class="nav-item" onclick="window.location.href='index.html'"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
+  <div class="nav-item" onclick="window.location.href='invoice.html'"><div class="nav-icon">📋</div><div class="nav-item-label">Invoices</div></div>
+  <div class="nav-item" onclick="window.location.href='expenses.html'"><div class="nav-icon">💰</div><div class="nav-item-label">Expenses</div></div>
+  <div class="nav-item" onclick="window.location.href='tax.html'"><div class="nav-icon">📊</div><div class="nav-item-label">Tax</div></div>
+  <div class="nav-item active" onclick="window.location.href='settings.html'"><div class="nav-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Taking you to secure checkout...</div>
 </div>
 
 <script src="js/app.js"></script>
 <script>
-TerryBot.initNav('settings');
+const STRIPE_PK     = 'pk_test_51TL0ea3kbnQPWj10C3oHEN7naPwsRs3jwRZ5r4mBATHl1PR8a8ufMqJTT0RGKw9Jvl6DmIwZJV7av92m64zJNL5f00NFWnXTf7';
+const PRICE_MONTHLY = 'price_1TL0kf3kbnQPWj1025w22S99';
+const PRICE_ANNUAL  = 'price_1TL0mR3kbnQPWj103PBhDUzJ';
+const stripe        = Stripe(STRIPE_PK);
 
 let selectedPlan = 'pro';
 let billingCycle = 'monthly';
 
-const faqs = [
-  { q: 'Can I cancel at any time?', a: 'Yes — absolutely. Cancel any time from your account settings. Monthly plans keep access until the end of the billing period. Annual plans are non-refundable after 14 days but you keep access for the full year.' },
-  { q: 'Is my data safe?', a: 'Yes. Your data is encrypted at rest and in transit. We use Stripe for all payments — TerryBot never sees your card details. Your invoice and expense data is backed up automatically.' },
-  { q: 'Does TerryBot replace my accountant?', a: 'TerryBot handles day-to-day bookkeeping for sole traders — invoices, expenses, and tax estimates. For complex situations, VAT registration, or if you earn over £50k, we still recommend speaking to an accountant.' },
-  { q: 'Can I switch between monthly and annual?', a: 'Yes. Upgrade from monthly to annual at any time and we\'ll prorate the difference. Downgrading takes effect at the end of your annual billing period.' },
-  { q: 'Why is the free tier so limited?', a: 'The free tier lets you try TerryBot and send your first invoice before committing. We keep it limited to prevent misuse and keep the service fast and reliable for paying members.' },
-  { q: 'What payment methods do you accept?', a: 'All major credit and debit cards via Stripe. We don\'t store your card details — all payments are handled securely by Stripe.' }
-];
-
-function buildFAQ() {
-  const list = document.getElementById('faqList');
-  list.innerHTML = faqs.map((faq, i) =>
-    '<div class="faq-item" id="faq' + i + '">' +
-      '<button class="faq-question" onclick="toggleFAQ(' + i + ')">' +
-        faq.q + '<span class="faq-chevron">▾</span>' +
-      '</button>' +
-      '<div class="faq-answer">' + faq.a + '</div>' +
-    '</div>'
-  ).join('');
-}
-
-function toggleFAQ(i) {
-  const item = document.getElementById('faq' + i);
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
-}
+TerryBot.initNav('settings');
 
 function selectPlan(plan) {
   selectedPlan = plan;
   document.getElementById('cardFree').classList.toggle('selected', plan === 'free');
-  document.getElementById('cardPro').classList.toggle('selected', plan === 'pro');
+  document.getElementById('cardPro').classList.toggle('selected',  plan === 'pro');
   document.getElementById('radioFree').classList.toggle('selected', plan === 'free');
-  document.getElementById('radioPro').classList.toggle('selected', plan === 'pro');
+  document.getElementById('radioPro').classList.toggle('selected',  plan === 'pro');
   updateCTA();
 }
 
 function toggleBilling(checkbox) {
   billingCycle = checkbox.checked ? 'annual' : 'monthly';
-  document.getElementById('labelMonthly').style.color = billingCycle === 'monthly' ? 'var(--navy)' : 'var(--muted)';
-  document.getElementById('labelAnnual').style.color  = billingCycle === 'annual'  ? 'var(--navy)' : 'var(--muted)';
-  document.getElementById('saveBadge').style.display  = billingCycle === 'annual'  ? 'inline-block' : 'none';
+  document.getElementById('labelMonthly').classList.toggle('active', !checkbox.checked);
+  document.getElementById('labelAnnual').classList.toggle('active',   checkbox.checked);
+  document.getElementById('saveBadge').classList.toggle('hidden',    !checkbox.checked);
   if (billingCycle === 'annual') {
-    document.getElementById('proPrice').innerHTML  = '£49.99 <span>/yr</span>';
+    document.getElementById('proPrice').innerHTML    = '£49.99 <span>/yr</span>';
     document.getElementById('proPeriod').textContent = 'Billed annually · saves £33.89';
-    document.getElementById('proSaving').textContent = 'That\'s just £4.17/month!';
     document.getElementById('proSaving').classList.remove('hidden');
   } else {
-    document.getElementById('proPrice').innerHTML  = '£6.99 <span>/mo</span>';
+    document.getElementById('proPrice').innerHTML    = '£6.99 <span>/mo</span>';
     document.getElementById('proPeriod').textContent = 'Billed monthly · cancel any time';
     document.getElementById('proSaving').classList.add('hidden');
   }
@@ -215,28 +196,78 @@ function toggleBilling(checkbox) {
 function updateCTA() {
   const btn = document.getElementById('ctaBtn');
   if (selectedPlan === 'free') {
-    btn.textContent = 'Start for free →';
-    btn.style.background = 'var(--navy)'; btn.style.color = 'white';
-  } else if (billingCycle === 'annual') {
-    btn.textContent = 'Get Annual Pro — £49.99/yr →';
-    btn.style.background = ''; btn.style.color = '';
+    btn.textContent  = 'Continue with Free →';
+    btn.className    = 'btn btn-outline btn-full';
   } else {
-    btn.textContent = 'Get TerryBot Pro — £6.99/mo →';
-    btn.style.background = ''; btn.style.color = '';
+    btn.textContent  = billingCycle === 'annual'
+      ? 'Get TerryBot Pro — £49.99/yr →'
+      : 'Get TerryBot Pro — £6.99/mo →';
+    btn.className    = 'btn btn-yellow btn-full';
   }
+  btn.style.fontSize = '16px';
+  btn.style.padding  = '16px';
+  btn.style.marginTop = '1.25rem';
 }
 
-function handleSubscribe() {
+async function handleSubscribe() {
   if (selectedPlan === 'free') {
     window.location.href = 'index.html';
-  } else {
-    alert('Stripe payment coming soon! TerryBot Pro will be available to purchase shortly.');
+    return;
+  }
+  const priceId = billingCycle === 'annual' ? PRICE_ANNUAL : PRICE_MONTHLY;
+  document.getElementById('loadingOverlay').classList.add('show');
+  try {
+    const { error } = await stripe.redirectToCheckout({
+      lineItems:                [{ price: priceId, quantity: 1 }],
+      mode:                     'subscription',
+      successUrl:               window.location.origin + '/success.html?session_id={CHECKOUT_SESSION_ID}',
+      cancelUrl:                window.location.origin + '/pricing.html?cancelled=true',
+      billingAddressCollection: 'auto',
+      locale:                   'en-GB',
+    });
+    if (error) {
+      document.getElementById('loadingOverlay').classList.remove('show');
+      TerryBot.showToast('Payment error: ' + error.message);
+    }
+  } catch (err) {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    TerryBot.showToast('Something went wrong. Please try again.');
   }
 }
 
-// Init
+// Cancelled toast
+if (new URLSearchParams(window.location.search).get('cancelled') === 'true') {
+  setTimeout(() => TerryBot.showToast('No worries — you can subscribe any time! 👍'), 600);
+}
+
+// FAQ
+const faqs = [
+  { q:'Can I cancel at any time?', a:'Yes — cancel from your account settings any time. Monthly plans keep access until the end of the billing period. Annual plans are non-refundable after 14 days but you keep access for the full year.' },
+  { q:'Is my data safe?', a:'Yes. All payments are handled by Stripe — we never see your card details. Your invoice and expense data is stored securely.' },
+  { q:'Does TerryBot replace my accountant?', a:'TerryBot handles the day-to-day stuff — invoices, expenses, and tax estimates. For complex situations or if you earn over £50k, we still recommend speaking to an accountant.' },
+  { q:'Can I switch from monthly to annual?', a:'Yes. Upgrade any time and we\'ll prorate the difference. Downgrading takes effect at the end of your annual period.' },
+  { q:'Why is the free tier so limited?', a:'The free tier lets you try TerryBot and send your first invoice before committing. We limit it to keep the service fast and reliable for paying members.' },
+  { q:'What payment methods do you accept?', a:'All major credit and debit cards via Stripe — Visa, Mastercard, Amex. Apple Pay and Google Pay are also supported on compatible devices.' },
+  { q:'Do I get a receipt?', a:'Yes — Stripe automatically emails you a receipt after every payment. You can also download invoices from your Stripe billing portal.' }
+];
+
+document.getElementById('faqList').innerHTML = faqs.map((faq, i) =>
+  '<div class="faq-item" id="faq' + i + '">' +
+    '<button class="faq-question" onclick="toggleFAQ(' + i + ')">' +
+      faq.q + '<span class="faq-chevron">▾</span>' +
+    '</button>' +
+    '<div class="faq-answer">' + faq.a + '</div>' +
+  '</div>'
+).join('');
+
+function toggleFAQ(i) {
+  const item   = document.getElementById('faq' + i);
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
 selectPlan('pro');
-buildFAQ();
 </script>
 </body>
 </html>

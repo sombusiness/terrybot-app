@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TerryBot — You're on Pro! 🎉</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+<meta name="theme-color" content="#1B2B4B"/>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left" onclick="window.location.href='index.html'">
+    <div class="nav-logo">T</div>
+    <div>
+      <div class="nav-brand">Terry<span>Bot</span></div>
+      <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
+    </div>
+  </div>
+</nav>
+
+<div class="main" style="text-align:center;padding-top:2rem">
+
+  <img src="images/terry-thumbsup.png" alt="Terry thumbs up" style="width:200px;height:220px;object-fit:contain;display:block;margin:0 auto 1.5rem"/>
+
+  <div style="display:inline-block;background:var(--green-light);color:var(--green);font-size:14px;font-weight:800;padding:8px 20px;border-radius:999px;margin-bottom:1rem">
+    ✓ Payment confirmed!
+  </div>
+
+  <h1 style="font-size:28px;font-weight:900;color:var(--navy);margin-bottom:8px">
+    You're on TerryBot Pro! 🎉
+  </h1>
+  <p style="font-size:15px;font-weight:600;color:var(--muted);line-height:1.6;margin-bottom:2rem">
+    Welcome to the Pro life! Unlimited invoices, expenses, PDFs and everything else — it's all yours now. Terry's well chuffed.
+  </p>
+
+  <div class="card" style="text-align:left;margin-bottom:1rem">
+    <div class="card-title">What's unlocked 🔓</div>
+    <div class="feature-row"><div class="feature-tick">✓</div><strong>Unlimited invoices</strong></div>
+    <div class="feature-row"><div class="feature-tick">✓</div><strong>Unlimited expenses</strong></div>
+    <div class="feature-row"><div class="feature-tick">✓</div>PDF downloads</div>
+    <div class="feature-row"><div class="feature-tick">✓</div>Full tax summary &amp; HMRC checklist</div>
+    <div class="feature-row"><div class="feature-tick">✓</div>WhatsApp invoice sharing</div>
+    <div class="feature-row"><div class="feature-tick">✓</div>Receipt photo upload</div>
+    <div class="feature-row"><div class="feature-tick">✓</div>Works offline</div>
+  </div>
+
+  <div style="background:var(--yellow-light);border:1.5px solid var(--yellow);border-radius:12px;padding:1rem;margin-bottom:1.5rem;font-size:13px;font-weight:700;color:var(--navy);line-height:1.6">
+    📧 A receipt has been sent to your email by Stripe.<br/>
+    You can manage your subscription any time from <strong>Settings</strong>.
+  </div>
+
+  <a href="index.html" class="btn btn-navy btn-full" style="font-size:16px;padding:16px;display:flex;text-decoration:none">
+    Let's get to work →
+  </a>
+
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location.href='index.html'"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
+  <div class="nav-item" onclick="window.location.href='invoice.html'"><div class="nav-icon">📋</div><div class="nav-item-label">Invoices</div></div>
+  <div class="nav-item" onclick="window.location.href='expenses.html'"><div class="nav-icon">💰</div><div class="nav-item-label">Expenses</div></div>
+  <div class="nav-item" onclick="window.location.href='tax.html'"><div class="nav-icon">📊</div><div class="nav-item-label">Tax</div></div>
+  <div class="nav-item" onclick="window.location.href='settings.html'"><div class="nav-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
