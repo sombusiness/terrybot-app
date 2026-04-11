@@ -35,22 +35,24 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);o
 .hero{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding:2rem 1.5rem 0}
 .hero::before{content:'';position:absolute;top:-40%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(245,197,24,0.12) 0%,transparent 70%);pointer-events:none}
 .hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(245,197,24,0.06) 0%,transparent 70%);pointer-events:none}
-.hero-inner{max-width:480px;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:0}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);border-radius:999px;padding:6px 16px;font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:1.5rem;animation:fadeDown 0.6s ease both}
-.hero h1{font-size:clamp(32px,8vw,48px);font-weight:900;color:white;line-height:1.1;margin-bottom:1.25rem;animation:fadeDown 0.7s 0.1s ease both}
+.hero-inner{max-width:600px;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding-bottom:0}
+.hero-split{display:flex;align-items:center;gap:0;width:100%;justify-content:space-between}
+.hero-text{flex:1;padding-right:1rem}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);border-radius:999px;padding:6px 16px;font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:1.5rem;animation:fadeDown 0.6s ease both;align-self:flex-start}
+.hero h1{font-size:clamp(26px,6vw,38px);font-weight:900;color:white;line-height:1.15;margin-bottom:1rem;animation:fadeDown 0.7s 0.1s ease both}
 .hero h1 span{color:var(--yellow)}
-.hero-sub{font-size:17px;font-weight:600;color:rgba(255,255,255,0.75);line-height:1.7;margin-bottom:2rem;max-width:380px;animation:fadeDown 0.7s 0.2s ease both}
+.hero-sub{font-size:16px;font-weight:600;color:rgba(255,255,255,0.75);line-height:1.7;margin-bottom:1.5rem;animation:fadeDown 0.7s 0.2s ease both}
 .hero-sub strong{color:white}
-.hero-ctas{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;animation:fadeDown 0.7s 0.3s ease both;margin-bottom:1.5rem}
+.hero-ctas{display:flex;flex-direction:column;gap:12px;width:100%;animation:fadeDown 0.7s 0.3s ease both;margin-bottom:1.5rem}
 .btn-hero-primary{background:var(--yellow);color:var(--navy);font-size:17px;font-weight:900;padding:16px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 20px rgba(245,197,24,0.35)}
 .btn-hero-primary:hover{background:var(--yellow-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,197,24,0.4)}
 .btn-hero-secondary{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);font-size:15px;font-weight:800;padding:13px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid rgba(255,255,255,0.15);transition:all 0.2s}
 .btn-hero-secondary:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.3)}
-.hero-pint{font-size:13px;font-weight:700;color:rgba(255,255,255,0.45);animation:fadeDown 0.7s 0.4s ease both}
+.hero-pint{font-size:12px;font-weight:700;color:rgba(255,255,255,0.45);animation:fadeDown 0.7s 0.4s ease both;margin-top:4px}
 .hero-pint span{color:var(--yellow)}
-.hero-terry{width:280px;margin:0 auto;animation:floatUp 0.8s 0.3s ease both;position:relative;z-index:2}
+.hero-terry{width:200px;flex-shrink:0;animation:floatUp 0.8s 0.3s ease both;position:relative;z-index:2}
 .hero-terry img{width:100%;height:auto;display:block;filter:drop-shadow(0 20px 40px rgba(0,0,0,0.4))}
-.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.1);margin:0 -1.5rem;width:calc(100% + 3rem)}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.1);margin:2rem -1.5rem 0;width:calc(100% + 3rem)}
 .hero-stat{background:rgba(255,255,255,0.04);padding:1.25rem 0.75rem;text-align:center}
 .hero-stat-value{font-size:24px;font-weight:900;color:var(--yellow)}
 .hero-stat-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);margin-top:3px}
@@ -175,26 +177,30 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </a>
-  <a href="index.html" class="nav-cta pulse">Get started free →</a>
+  <a href="dashboard.html" class="nav-cta pulse">Get started free →</a>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-eyebrow">🤖 Your AI business mate for the trades</div>
-    <h1>Stop drowning in <span>paperwork.</span><br/>Start getting paid.</h1>
-    <p class="hero-sub">TerryBot sorts your <strong>invoices, expenses and tax</strong> in minutes — so you can get back on the tools. No spreadsheets. No stress. No accountant needed.</p>
-    <div class="hero-ctas">
-      <a href="index.html" class="btn-hero-primary">🔨 Try TerryBot free</a>
-      <a href="pricing.html" class="btn-hero-secondary">💷 See pricing — less than a pint</a>
-    </div>
-    <p class="hero-pint">Pro plan from just <span>£6.99/month</span> · Cancel any time · No contract</p>
-    <div class="hero-terry float">
-      <img src="images/terry-invoice.png" alt="Terry Bot — your AI trades assistant"/>
+    <div class="hero-split">
+      <div class="hero-text">
+        <h1>Stop drowning in <span>paperwork.</span> Start getting paid.</h1>
+        <p class="hero-sub">TerryBot sorts your <strong>invoices, expenses and tax</strong> in minutes — so you can get back on the tools. No spreadsheets. No stress. No accountant needed.</p>
+        <div class="hero-ctas">
+          <a href="dashboard.html" class="btn-hero-primary">🔨 Try TerryBot free</a>
+          <a href="pricing.html" class="btn-hero-secondary">💷 See pricing — less than a pint</a>
+        </div>
+        <p class="hero-pint">Pro plan from just <span>£6.99/month</span> · Cancel any time · No contract</p>
+      </div>
+      <div class="hero-terry float">
+        <img src="images/terry-invoice.png" alt="Terry Bot — your AI trades assistant"/>
+      </div>
     </div>
 
     <!-- SCROLLING TICKER -->
-    <div class="ticker-wrap">
+    <div class="ticker-wrap" style="margin-top:2rem">
       <div class="ticker">
         <span class="ticker-item">📋 Invoice sent in <span>60 seconds</span></span>
         <span class="ticker-item">💰 Receipt logged instantly</span>
@@ -319,7 +325,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       </div>
     </div>
     <div class="reveal" style="margin-top:2rem;text-align:center">
-      <a href="index.html" class="btn-hero-primary" style="display:inline-flex;width:auto;padding:14px 28px;text-decoration:none">🔨 Try it now — it's free</a>
+      <a href="dashboard.html" class="btn-hero-primary" style="display:inline-flex;width:auto;padding:14px 28px;text-decoration:none">🔨 Try it now — it's free</a>
     </div>
   </div>
 </section>
@@ -425,7 +431,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
         </div>
         <div class="price-context">Or £49.99/year — saves you £33.89. That's basically 5 pints back in your pocket.</div>
       </div>
-      <a href="index.html" class="btn-cta-dark">🔨 Start free — no card needed</a>
+      <a href="dashboard.html" class="btn-cta-dark">🔨 Start free — no card needed</a>
       <a href="pricing.html" class="btn-cta-outline">See full pricing →</a>
       <div class="guarantee">
         🔒 No contract &nbsp;·&nbsp; Cancel any time &nbsp;·&nbsp; 14-day money back guarantee
@@ -442,7 +448,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
   </div>
   <div class="footer-tagline">Your AI mate for the trades · Built in the UK 🇬🇧</div>
   <div class="footer-links">
-    <a href="index.html">App</a>
+    <a href="dashboard.html">App</a>
     <a href="pricing.html">Pricing</a>
     <a href="privacy.html">Privacy Policy</a>
     <a href="terms.html">Terms &amp; Conditions</a>
