@@ -36,10 +36,21 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);o
 .hero::before{content:'';position:absolute;top:-40%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(245,197,24,0.12) 0%,transparent 70%);pointer-events:none}
 .hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(245,197,24,0.06) 0%,transparent 70%);pointer-events:none}
 .hero-inner{max-width:600px;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding-bottom:0}
-.hero-split{display:flex;align-items:center;gap:0;width:100%;justify-content:space-between}
-.hero-text{flex:1;padding-right:1rem}
+.hero-split{display:flex;align-items:center;gap:1rem;width:100%;justify-content:space-between}
+.hero-text{flex:1;min-width:0}
+@media(max-width:520px){
+  .hero-split{flex-direction:column-reverse;align-items:center;text-align:center}
+  .hero-text{width:100%}
+  .hero-eyebrow{align-self:center!important}
+  .hero h1{font-size:30px!important;text-align:center}
+  .hero-sub{text-align:center}
+  .hero-pint{text-align:center}
+  .hero-terry{width:200px!important;margin:0 auto}
+  .hero-ctas{align-items:center}
+  .btn-hero-primary,.btn-hero-secondary{max-width:320px;width:100%}
+}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);border-radius:999px;padding:6px 16px;font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:1.5rem;animation:fadeDown 0.6s ease both;align-self:flex-start}
-.hero h1{font-size:clamp(26px,6vw,38px);font-weight:900;color:white;line-height:1.15;margin-bottom:1rem;animation:fadeDown 0.7s 0.1s ease both}
+.hero h1{font-size:clamp(28px,5vw,42px);font-weight:900;color:white;line-height:1.15;margin-bottom:1rem;animation:fadeDown 0.7s 0.1s ease both}
 .hero h1 span{color:var(--yellow)}
 .hero-sub{font-size:16px;font-weight:600;color:rgba(255,255,255,0.75);line-height:1.7;margin-bottom:1.5rem;animation:fadeDown 0.7s 0.2s ease both}
 .hero-sub strong{color:white}
@@ -50,7 +61,7 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);o
 .btn-hero-secondary:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.3)}
 .hero-pint{font-size:12px;font-weight:700;color:rgba(255,255,255,0.45);animation:fadeDown 0.7s 0.4s ease both;margin-top:4px}
 .hero-pint span{color:var(--yellow)}
-.hero-terry{width:200px;flex-shrink:0;animation:floatUp 0.8s 0.3s ease both;position:relative;z-index:2}
+.hero-terry{width:240px;flex-shrink:0;animation:floatUp 0.8s 0.3s ease both;position:relative;z-index:2}
 .hero-terry img{width:100%;height:auto;display:block;filter:drop-shadow(0 20px 40px rgba(0,0,0,0.4))}
 .hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.1);margin:2rem -1.5rem 0;width:calc(100% + 3rem)}
 .hero-stat{background:rgba(255,255,255,0.04);padding:1.25rem 0.75rem;text-align:center}
