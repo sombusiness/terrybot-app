@@ -222,30 +222,23 @@ function updateCTA() {
   btn.style.marginTop = '1.25rem';
 }
 
-async function handleSubscribe() {
+function handleSubscribe() {
   if (selectedPlan === 'free') {
     window.location.href = 'index.html';
     return;
   }
-  const priceId = billingCycle === 'annual' ? PRICE_ANNUAL : PRICE_MONTHLY;
+  // Show loading spinner
   document.getElementById('loadingOverlay').classList.add('show');
-  try {
-    const { error } = await stripe.redirectToCheckout({
-      lineItems:                [{ price: priceId, quantity: 1 }],
-      mode:                     'subscription',
-      successUrl:               window.location.origin + '/success.html?session_id={CHECKOUT_SESSION_ID}',
-      cancelUrl:                window.location.origin + '/pricing.html?cancelled=true',
-      billingAddressCollection: 'auto',
-      locale:                   'en-GB',
-    });
-    if (error) {
-      document.getElementById('loadingOverlay').classList.remove('show');
-      TerryBot.showToast('Payment error: ' + error.message);
-    }
-  } catch (err) {
-    document.getElementById('loadingOverlay').classList.remove('show');
-    TerryBot.showToast('Something went wrong. Please try again.');
-  }
+
+  // Use Stripe Payment Links - no domain whitelisting needed
+  // Replace these with your actual Payment Link URLs from Stripe Dashboard
+  const LINK_MONTHLY = 'https://buy.stripe.com/test_00wcMYa08av447T1bM3wQ00';
+  const LINK_ANNUAL  = 'https://buy.stripe.com/test_5kQeV6gowcDceMxbQq3wQ01';
+
+  const link = billingCycle === 'annual' ? LINK_ANNUAL : LINK_MONTHLY;
+
+  // Redirect to Stripe Payment Link
+  window.location.href = link;
 }
 
 // Cancelled toast
