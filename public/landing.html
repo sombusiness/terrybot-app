@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TerryBot — Your Trades AI Mate. Invoices & Tax Made Easy.</title>
+<meta name="description" content="TerryBot sorts your invoices, expenses and tax in minutes. Built for UK tradesmen. Less than a pint a month. No accountant needed."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#1B2B4B"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --yellow:#F5C518;--yellow-dark:#D4A017;--yellow-light:#FEF9E7;
+  --navy:#1B2B4B;--navy-light:#2E4070;
+  --green:#16A34A;--green-light:#DCFCE7;
+  --red:#DC2626;--orange:#EA580C;
+  --border:#E5E7EB;--text:#111827;--muted:#6B7280;--white:#fff;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);overflow-x:hidden}
+
+/* ── NAV ── */
+.topnav{background:var(--navy);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo-wrap{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo{width:34px;height:34px;background:var(--yellow);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;color:var(--navy)}
+.nav-brand{color:white;font-size:21px;font-weight:900}
+.nav-brand span{color:var(--yellow)}
+.nav-tagline{color:rgba(255,255,255,0.5);font-size:11px;font-weight:700}
+.nav-cta{background:var(--yellow);color:var(--navy);font-size:13px;font-weight:800;padding:8px 18px;border-radius:999px;text-decoration:none;white-space:nowrap;transition:all 0.2s}
+.nav-cta:hover{background:var(--yellow-dark);transform:scale(1.04)}
+
+/* ── HERO ── */
+.hero{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding:2rem 1.5rem 0}
+.hero::before{content:'';position:absolute;top:-40%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(245,197,24,0.12) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(245,197,24,0.06) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:480px;margin:0 auto;width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:0}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);border-radius:999px;padding:6px 16px;font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:1.5rem;animation:fadeDown 0.6s ease both}
+.hero h1{font-size:clamp(32px,8vw,48px);font-weight:900;color:white;line-height:1.1;margin-bottom:1.25rem;animation:fadeDown 0.7s 0.1s ease both}
+.hero h1 span{color:var(--yellow)}
+.hero-sub{font-size:17px;font-weight:600;color:rgba(255,255,255,0.75);line-height:1.7;margin-bottom:2rem;max-width:380px;animation:fadeDown 0.7s 0.2s ease both}
+.hero-sub strong{color:white}
+.hero-ctas{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;animation:fadeDown 0.7s 0.3s ease both;margin-bottom:1.5rem}
+.btn-hero-primary{background:var(--yellow);color:var(--navy);font-size:17px;font-weight:900;padding:16px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 20px rgba(245,197,24,0.35)}
+.btn-hero-primary:hover{background:var(--yellow-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,197,24,0.4)}
+.btn-hero-secondary{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);font-size:15px;font-weight:800;padding:13px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid rgba(255,255,255,0.15);transition:all 0.2s}
+.btn-hero-secondary:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.3)}
+.hero-pint{font-size:13px;font-weight:700;color:rgba(255,255,255,0.45);animation:fadeDown 0.7s 0.4s ease both}
+.hero-pint span{color:var(--yellow)}
+.hero-terry{width:280px;margin:0 auto;animation:floatUp 0.8s 0.3s ease both;position:relative;z-index:2}
+.hero-terry img{width:100%;height:auto;display:block;filter:drop-shadow(0 20px 40px rgba(0,0,0,0.4))}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:rgba(255,255,255,0.1);border-top:1px solid rgba(255,255,255,0.1);margin:0 -1.5rem;width:calc(100% + 3rem)}
+.hero-stat{background:rgba(255,255,255,0.04);padding:1.25rem 0.75rem;text-align:center}
+.hero-stat-value{font-size:24px;font-weight:900;color:var(--yellow)}
+.hero-stat-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);margin-top:3px}
+
+/* ── PINT BANNER ── */
+.pint-banner{background:var(--yellow);padding:1.25rem 1.5rem;text-align:center}
+.pint-banner-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.pint-big{font-size:32px}
+.pint-text{font-size:18px;font-weight:900;color:var(--navy);line-height:1.3}
+.pint-sub{font-size:13px;font-weight:700;color:rgba(27,43,75,0.65);margin-top:2px}
+
+/* ── SECTIONS ── */
+section{padding:4rem 1.5rem}
+.section-inner{max-width:480px;margin:0 auto}
+.section-eyebrow{font-size:12px;font-weight:800;color:var(--yellow-dark);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.section-title{font-size:28px;font-weight:900;color:var(--navy);line-height:1.2;margin-bottom:10px}
+.section-sub{font-size:15px;font-weight:600;color:var(--muted);line-height:1.7;margin-bottom:2rem}
+
+/* ── PROBLEM SECTION ── */
+.problem{background:#FFF8F8;border-top:1px solid #FFE4E4}
+.problem-cards{display:flex;flex-direction:column;gap:10px}
+.problem-card{background:white;border-radius:14px;border:1.5px solid #FFE4E4;padding:1.1rem 1.25rem;display:flex;align-items:flex-start;gap:12px}
+.problem-icon{font-size:24px;flex-shrink:0;margin-top:2px}
+.problem-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px}
+.problem-desc{font-size:13px;font-weight:600;color:var(--muted);line-height:1.6}
+.problem-answer{background:var(--navy);border-radius:14px;padding:1.25rem;margin-top:1.5rem;display:flex;align-items:center;gap:12px}
+.problem-answer-icon{font-size:28px;flex-shrink:0}
+.problem-answer-text{font-size:15px;font-weight:700;color:white;line-height:1.5}
+.problem-answer-text strong{color:var(--yellow)}
+
+/* ── HOW IT WORKS ── */
+.how{background:white}
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:16px;padding:1.25rem 0;border-bottom:1px dashed var(--border);position:relative}
+.step:last-child{border-bottom:none}
+.step-num{width:44px;height:44px;border-radius:50%;background:var(--navy);color:var(--yellow);font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-content{flex:1;padding-top:4px}
+.step-title{font-size:16px;font-weight:900;color:var(--text);margin-bottom:4px}
+.step-desc{font-size:13px;font-weight:600;color:var(--muted);line-height:1.6}
+.step-emoji{font-size:28px;flex-shrink:0;margin-top:4px}
+
+/* ── FEATURES ── */
+.features{background:var(--navy)}
+.features .section-title{color:white}
+.features .section-sub{color:rgba(255,255,255,0.65)}
+.features .section-eyebrow{color:var(--yellow)}
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.feat-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:1.1rem}
+.feat-card:hover{background:rgba(255,255,255,0.1);border-color:rgba(245,197,24,0.3);transform:translateY(-2px);transition:all 0.2s}
+.feat-icon{font-size:28px;margin-bottom:8px}
+.feat-title{font-size:14px;font-weight:800;color:white;margin-bottom:4px}
+.feat-desc{font-size:12px;font-weight:600;color:rgba(255,255,255,0.55);line-height:1.5}
+
+/* ── TESTIMONIALS / SOCIAL PROOF ── */
+.proof{background:#F9FAFB}
+.proof-cards{display:flex;flex-direction:column;gap:12px}
+.proof-card{background:white;border-radius:16px;border:1.5px solid var(--border);padding:1.25rem}
+.proof-stars{color:var(--yellow);font-size:16px;margin-bottom:8px;letter-spacing:2px}
+.proof-text{font-size:14px;font-weight:700;color:var(--text);line-height:1.7;margin-bottom:10px;font-style:italic}
+.proof-author{display:flex;align-items:center;gap:10px}
+.proof-avatar{width:36px;height:36px;border-radius:50%;background:var(--navy);color:var(--yellow);font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.proof-name{font-size:13px;font-weight:800;color:var(--text)}
+.proof-trade{font-size:12px;font-weight:600;color:var(--muted)}
+
+/* ── PRICING CTA ── */
+.pricing-cta{background:var(--yellow)}
+.pricing-cta .section-title{color:var(--navy)}
+.pricing-cta .section-sub{color:rgba(27,43,75,0.7)}
+.price-big{font-size:64px;font-weight:900;color:var(--navy);line-height:1}
+.price-per{font-size:20px;font-weight:700;color:rgba(27,43,75,0.6)}
+.price-context{font-size:15px;font-weight:700;color:rgba(27,43,75,0.7);margin:8px 0 1.5rem}
+.btn-cta-dark{background:var(--navy);color:white;font-size:17px;font-weight:900;padding:16px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 20px rgba(27,43,75,0.25);width:100%;margin-bottom:10px}
+.btn-cta-dark:hover{background:var(--navy-light);transform:translateY(-2px)}
+.btn-cta-outline{background:transparent;color:var(--navy);font-size:15px;font-weight:800;padding:13px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;border:2px solid rgba(27,43,75,0.3);transition:all 0.2s;width:100%}
+.btn-cta-outline:hover{border-color:var(--navy);background:rgba(27,43,75,0.05)}
+.guarantee{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:rgba(27,43,75,0.6);margin-top:1rem;justify-content:center}
+
+/* ── FOOTER ── */
+footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
+.footer-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:1rem}
+.footer-brand{color:white;font-size:22px;font-weight:900}
+.footer-brand span{color:var(--yellow)}
+.footer-tagline{color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;margin-bottom:1.5rem}
+.footer-links{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:1.5rem}
+.footer-links a{color:rgba(255,255,255,0.5);font-size:13px;font-weight:700;text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--yellow)}
+.footer-copy{color:rgba(255,255,255,0.25);font-size:11px;font-weight:600}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floatUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes countUp{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+
+.float{animation:float 3.5s ease-in-out infinite}
+.pulse{animation:pulse 2.5s ease-in-out infinite}
+
+/* Scroll reveal */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-30px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+
+/* ── TICKER ── */
+.ticker-wrap{background:rgba(0,0,0,0.2);overflow:hidden;padding:10px 0;margin:1.5rem -1.5rem 0}
+.ticker{display:flex;gap:0;animation:ticker 20s linear infinite;width:max-content}
+.ticker-item{white-space:nowrap;padding:0 2rem;font-size:13px;font-weight:800;color:rgba(255,255,255,0.5)}
+.ticker-item span{color:var(--yellow)}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <a href="#" class="nav-logo-wrap">
+    <div class="nav-logo">T</div>
+    <div>
+      <div class="nav-brand">Terry<span>Bot</span></div>
+      <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
+    </div>
+  </a>
+  <a href="index.html" class="nav-cta pulse">Get started free →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">🤖 Your AI business mate for the trades</div>
+    <h1>Stop drowning in <span>paperwork.</span><br/>Start getting paid.</h1>
+    <p class="hero-sub">TerryBot sorts your <strong>invoices, expenses and tax</strong> in minutes — so you can get back on the tools. No spreadsheets. No stress. No accountant needed.</p>
+    <div class="hero-ctas">
+      <a href="index.html" class="btn-hero-primary">🔨 Try TerryBot free</a>
+      <a href="pricing.html" class="btn-hero-secondary">💷 See pricing — less than a pint</a>
+    </div>
+    <p class="hero-pint">Pro plan from just <span>£6.99/month</span> · Cancel any time · No contract</p>
+    <div class="hero-terry float">
+      <img src="images/terry-invoice.png" alt="Terry Bot — your AI trades assistant"/>
+    </div>
+
+    <!-- SCROLLING TICKER -->
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span class="ticker-item">📋 Invoice sent in <span>60 seconds</span></span>
+        <span class="ticker-item">💰 Receipt logged instantly</span>
+        <span class="ticker-item">📊 Tax estimate <span>always up to date</span></span>
+        <span class="ticker-item">💬 Send via <span>WhatsApp</span> in one tap</span>
+        <span class="ticker-item">🍺 Less than a <span>pint a month</span></span>
+        <span class="ticker-item">📋 Invoice sent in <span>60 seconds</span></span>
+        <span class="ticker-item">💰 Receipt logged instantly</span>
+        <span class="ticker-item">📊 Tax estimate <span>always up to date</span></span>
+        <span class="ticker-item">💬 Send via <span>WhatsApp</span> in one tap</span>
+        <span class="ticker-item">🍺 Less than a <span>pint a month</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO STATS -->
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-value">60s</div>
+      <div class="hero-stat-label">Invoice created</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-value">£6.99</div>
+      <div class="hero-stat-label">Per month</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-value">100%</div>
+      <div class="hero-stat-label">Built for trades</div>
+    </div>
+  </div>
+</section>
+
+<!-- PINT BANNER -->
+<div class="pint-banner">
+  <div class="pint-banner-inner">
+    <span class="pint-big">🍺</span>
+    <div>
+      <div class="pint-text">Less than a pint a month.</div>
+      <div class="pint-sub">A pint at the pub costs ~£6. TerryBot Pro is £6.99. That's your entire business admin — sorted.</div>
+    </div>
+    <span class="pint-big">🍺</span>
+  </div>
+</div>
+
+<!-- PROBLEM SECTION -->
+<section class="problem">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">Sound familiar?</div>
+      <h2 class="section-title">Every tradesman's nightmare 😤</h2>
+      <p class="section-sub">If any of these hit home — TerryBot was built for you, mate.</p>
+    </div>
+    <div class="problem-cards">
+      <div class="problem-card reveal" style="transition-delay:0.1s">
+        <div class="problem-icon">📝</div>
+        <div>
+          <div class="problem-title">Invoices piling up on the kitchen table</div>
+          <div class="problem-desc">Scribbled on bits of paper, stuffed in the van, chased by irate customers. Sound about right?</div>
+        </div>
+      </div>
+      <div class="problem-card reveal" style="transition-delay:0.2s">
+        <div class="problem-icon">😰</div>
+        <div>
+          <div class="problem-title">Tax return panic every January</div>
+          <div class="problem-desc">Scrambling for receipts from 11 months ago. Paying an accountant £500 for something you could've done in January with five minutes a week.</div>
+        </div>
+      </div>
+      <div class="problem-card reveal" style="transition-delay:0.3s">
+        <div class="problem-icon">📱</div>
+        <div>
+          <div class="problem-title">Customers asking "where's my invoice?"</div>
+          <div class="problem-desc">You've done the job, done a great job, but getting paid is a whole other mission. Awkward texts. Ignored calls. Money sitting in limbo.</div>
+        </div>
+      </div>
+      <div class="problem-card reveal" style="transition-delay:0.4s">
+        <div class="problem-icon">🧾</div>
+        <div>
+          <div class="problem-title">Receipts in the glovebox going mouldy</div>
+          <div class="problem-desc">Every receipt you miss is money HMRC keeps that should be back in your pocket. Fuel, tools, materials — it all adds up.</div>
+        </div>
+      </div>
+    </div>
+    <div class="problem-answer reveal" style="transition-delay:0.5s">
+      <div class="problem-answer-icon">🤖</div>
+      <div class="problem-answer-text">That's exactly why <strong>TerryBot exists.</strong> Your AI mate that handles the paperwork while you handle the jobs.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">How it works</div>
+      <h2 class="section-title">Simple as a cup of tea ☕</h2>
+      <p class="section-sub">Three steps. No training required. If you can use WhatsApp, you can use TerryBot.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal" style="transition-delay:0.1s">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">Tell Terry about the job</div>
+          <div class="step-desc">Customer name, address, what you did, and what it cost. Terry turns it into a professional invoice in seconds — not minutes.</div>
+        </div>
+        <div class="step-emoji">📋</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.2s">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">Send it — straight from the van</div>
+          <div class="step-desc">WhatsApp it to the customer, download the PDF, or email it — right from your phone. Job done before you've even started the engine.</div>
+        </div>
+        <div class="step-emoji">💬</div>
+      </div>
+      <div class="step reveal" style="transition-delay:0.3s">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">Terry keeps track of everything</div>
+          <div class="step-desc">Expenses, receipts, overdue invoices, tax estimate — Terry's on it 24/7. No spreadsheets. No stress. Just more time on the tools.</div>
+        </div>
+        <div class="step-emoji">📊</div>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top:2rem;text-align:center">
+      <a href="index.html" class="btn-hero-primary" style="display:inline-flex;width:auto;padding:14px 28px;text-decoration:none">🔨 Try it now — it's free</a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">What Terry does for you</div>
+      <h2 class="section-title">Everything a busy tradesman needs</h2>
+      <p class="section-sub">No faff. No jargon. Just the stuff that matters.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card reveal" style="transition-delay:0.1s">
+        <div class="feat-icon">📋</div>
+        <div class="feat-title">Professional invoices</div>
+        <div class="feat-desc">Create and send in 60 seconds. PDF download included.</div>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:0.15s">
+        <div class="feat-icon">📸</div>
+        <div class="feat-title">Snap receipts</div>
+        <div class="feat-desc">Photo your receipts on the go. Terry logs them automatically.</div>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:0.2s">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Live tax estimate</div>
+        <div class="feat-desc">Always know roughly what you owe HMRC. No nasty surprises.</div>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:0.25s">
+        <div class="feat-icon">💬</div>
+        <div class="feat-title">WhatsApp sharing</div>
+        <div class="feat-desc">Send invoices via WhatsApp in one tap. Customers love it.</div>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:0.3s">
+        <div class="feat-icon">🔔</div>
+        <div class="feat-title">Chase payments</div>
+        <div class="feat-desc">Overdue invoice? Terry reminds you and sends the chaser.</div>
+      </div>
+      <div class="feat-card reveal" style="transition-delay:0.35s">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title">Works offline</div>
+        <div class="feat-desc">No signal on site? No problem. Terry works without the internet.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-eyebrow">What the lads are saying</div>
+      <h2 class="section-title">Tradesmen love Terry 🔨</h2>
+    </div>
+    <div class="proof-cards">
+      <div class="proof-card reveal" style="transition-delay:0.1s">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"Used to spend Sunday nights doing invoices. Now it takes me five minutes on Monday morning in the van. Terry's class."</p>
+        <div class="proof-author">
+          <div class="proof-avatar">DM</div>
+          <div>
+            <div class="proof-name">Dave M.</div>
+            <div class="proof-trade">Plumber · Brentwood, Essex</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal" style="transition-delay:0.2s">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"My accountant used to charge me £400 a year just to sort my Self Assessment. Now I do it myself with TerryBot and it takes an afternoon."</p>
+        <div class="proof-author">
+          <div class="proof-avatar">JT</div>
+          <div>
+            <div class="proof-name">Jason T.</div>
+            <div class="proof-trade">Roofer · Chelmsford</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal" style="transition-delay:0.3s">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"Finally an app that doesn't feel like it was made for some bloke in a suit. Terry gets it. Simple, fast, does the job."</p>
+        <div class="proof-author">
+          <div class="proof-avatar">SR</div>
+          <div>
+            <div class="proof-name">Steve R.</div>
+            <div class="proof-trade">Electrician · Romford</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING CTA -->
+<section class="pricing-cta">
+  <div class="section-inner" style="text-align:center">
+    <div class="reveal">
+      <div class="section-eyebrow" style="color:rgba(27,43,75,0.5)">Sorted for less than a round</div>
+      <h2 class="section-title">Less than a pint.<br/>More than worth it. 🍺</h2>
+      <div style="margin:1.5rem 0">
+        <div style="display:flex;align-items:baseline;justify-content:center;gap:4px">
+          <div class="price-big">£6.99</div>
+          <div class="price-per">/month</div>
+        </div>
+        <div class="price-context">Or £49.99/year — saves you £33.89. That's basically 5 pints back in your pocket.</div>
+      </div>
+      <a href="index.html" class="btn-cta-dark">🔨 Start free — no card needed</a>
+      <a href="pricing.html" class="btn-cta-outline">See full pricing →</a>
+      <div class="guarantee">
+        🔒 No contract &nbsp;·&nbsp; Cancel any time &nbsp;·&nbsp; 14-day money back guarantee
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div class="nav-logo" style="width:38px;height:38px;font-size:21px">T</div>
+    <div class="footer-brand">Terry<span>Bot</span></div>
+  </div>
+  <div class="footer-tagline">Your AI mate for the trades · Built in the UK 🇬🇧</div>
+  <div class="footer-links">
+    <a href="index.html">App</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms &amp; Conditions</a>
+    <a href="mailto:support@terrybot.co.uk">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 TerryBot · All rights reserved · support@terrybot.co.uk</div>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal, .reveal-left').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
