@@ -52,7 +52,7 @@
     You can manage your subscription any time from <strong>Settings</strong>.
   </div>
 
-  <a href="index.html" class="btn btn-navy btn-full" style="font-size:16px;padding:16px;display:flex;text-decoration:none">
+  <a href="dashboard.html" class="btn btn-navy btn-full" style="font-size:16px;padding:16px;display:flex;text-decoration:none">
     Let's get to work →
   </a>
 
@@ -67,5 +67,14 @@
 </div>
 
 <script src="js/app.js"></script>
+<script>
+// Mark user as pro subscriber so they go straight to dashboard
+try {
+  var user = TerryBot.getUser();
+  user.isPro = true;
+  user.proSince = new Date().toISOString();
+  TerryBot.setUser(user);
+} catch(e) {}
+</script>
 </body>
 </html>
