@@ -428,10 +428,11 @@ function createInvoice() {
   TerryBot.setJobs(jobs);
   createdJob = job;
 
-  // Save to Supabase
-  if (_userId) {
-    dbSaveJob(job, _userId).catch(console.error);
-  }
+  // Save to Supabase - get fresh session
+  _sb.auth.getSession().then(function(res) {
+    var uid = res.data && res.data.session ? res.data.session.user.id : null;
+    if (uid) dbSaveJob(job, uid).catch(console.error);
+  });
 
   const user = TerryBot.getUser();
   document.getElementById('successHeading').textContent = 'Nice one, ' + user.name + '! 🎉';

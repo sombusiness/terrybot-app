@@ -13,67 +13,55 @@
 <body>
 
 <nav>
-  <div class="nav-left" onclick="window.location.href='index.html'">
+  <div class="nav-left" onclick="window.location.href='dashboard.html'">
     <div class="nav-logo">T</div>
     <div>
       <div class="nav-brand">Terry<span>Bot</span></div>
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <div class="nav-back" onclick="window.location.href='dashboard.html'">← Dashboard</div>
-    <button onclick="signOut()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:Nunito,sans-serif">Sign out</button>
-  </div>
+  <div class="nav-back" onclick="window.location.href='dashboard.html'">← Dashboard</div>
 </nav>
 
 <div class="main">
+  <div style="margin-top:1rem" class="summary-pills" id="summaryPills">
+    <div class="pill"><div class="pill-value green" id="paidCount">0</div><div class="pill-label">Paid</div></div>
+    <div class="pill"><div class="pill-value orange" id="pendingCount">0</div><div class="pill-label">Pending</div></div>
+    <div class="pill"><div class="pill-value red" id="overdueCount">0</div><div class="pill-label">Overdue</div></div>
+  </div>
 
-  <!-- SUMMARY PILLS -->
-  <div style="margin-top:1rem" class="summary-pills" id="summaryPills"></div>
-
-  <!-- TERRY TIP -->
   <div class="terry-tip">
-    <div class="terry-tip-img">
-      <img src="images/terry-invoice-v2.png" alt="Terry"/>
-    </div>
+    <div class="terry-tip-img"><img src="images/terry-invoice-v2.png" alt="Terry"/></div>
     <div class="terry-tip-bubble">
       <div class="terry-tip-title">Terry says...</div>
-      <p class="terry-tip-text" id="terryTipText">Loading...</p>
+      <p class="terry-tip-text" id="terryTipText">Loading your jobs...</p>
     </div>
   </div>
 
-  <!-- SEARCH -->
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
     <input type="text" class="search-input" id="searchInput" placeholder="Search by customer or job..." oninput="renderJobs()"/>
   </div>
 
-  <!-- FILTER TABS -->
   <div class="filter-tabs">
-    <button class="filter-tab active" onclick="setFilter('all',this)">All jobs</button>
-    <button class="filter-tab" onclick="setFilter('paid',this)">Paid</button>
-    <button class="filter-tab" onclick="setFilter('pending',this)">Pending</button>
-    <button class="filter-tab" onclick="setFilter('overdue',this)">Overdue</button>
+    <button class="filter-tab active" id="tab-all"     onclick="setFilter('all',this)">All jobs</button>
+    <button class="filter-tab"        id="tab-paid"    onclick="setFilter('paid',this)">Paid</button>
+    <button class="filter-tab"        id="tab-pending" onclick="setFilter('pending',this)">Pending</button>
+    <button class="filter-tab"        id="tab-overdue" onclick="setFilter('overdue',this)">Overdue</button>
   </div>
 
-  <!-- JOB LIST -->
   <div id="jobList"></div>
-
-  <!-- EMPTY STATE -->
   <div class="hidden" id="emptyState" style="text-align:center;padding:3rem 1rem">
     <div style="font-size:48px;margin-bottom:1rem">📋</div>
     <div style="font-size:18px;font-weight:800;margin-bottom:6px">No jobs found</div>
     <div style="font-size:14px;font-weight:600;color:var(--muted)">Try a different search or filter</div>
   </div>
-
 </div>
 
-<!-- FAB -->
 <div class="fab" onclick="window.location.href='invoice.html'" title="New invoice">＋</div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <div class="nav-item active" onclick="window.location.href='dashboard.html'"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
+  <div class="nav-item" onclick="window.location.href='dashboard.html'"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
   <div class="nav-item active" onclick="window.location.href='jobs.html'"><div class="nav-icon">📋</div><div class="nav-item-label">Invoices</div></div>
   <div class="nav-item" onclick="window.location.href='expenses.html'"><div class="nav-icon">💰</div><div class="nav-item-label">Expenses</div></div>
   <div class="nav-item" onclick="window.location.href='tax.html'"><div class="nav-icon">📊</div><div class="nav-item-label">Tax</div></div>
@@ -83,85 +71,65 @@
 <script src="js/app.js"></script>
 <script src="js/supabase-client.js"></script>
 <script>
-TerryBot.initNav('jobs');
-let allJobs = [];
-let activeFilter = 'all';
-let _userId = null;
-
-async function initJobs() {
-  const session = await requireAuth();
-  if (!session) return;
-  _userId = session.user.id;
-  clearDemoData();
-
-  // Load jobs from Supabase
-  allJobs = await dbLoadJobs(_userId);
-  // Also sync to localStorage for offline use
-  TerryBot.setJobs(allJobs);
-
-  const stats = TerryBot.getStats();
-
-  // Summary pills
-  document.getElementById('summaryPills').innerHTML =
-    '<div class="pill"><div class="pill-value green">' + stats.paidCount + '</div><div class="pill-label">Paid</div></div>' +
-    '<div class="pill"><div class="pill-value orange">' + stats.pendingCount + '</div><div class="pill-label">Pending</div></div>' +
-    '<div class="pill"><div class="pill-value red">' + stats.overdueCount + '</div><div class="pill-label">Overdue</div></div>';
-
-  // Terry tip
-  let tip = '';
-  if (stats.overdueCount > 0) {
-  tip = 'You have <strong>' + stats.overdueCount + ' overdue invoice' + (stats.overdueCount > 1 ? 's' : '') + '</strong>. Chase them today — a quick text is usually all it takes!';
-} else if (stats.pendingCount > 0) {
-  tip = 'You have <strong>' + stats.pendingCount + ' pending invoice' + (stats.pendingCount > 1 ? 's' : '') + '</strong> totalling <strong>' + TerryBot.formatCurrency(stats.unpaidTotal) + '</strong>. Make sure they\'ve been sent!';
-} else {
-  tip = 'All your invoices are paid — nice work! Tap <strong>+</strong> below to create a new one.';
-}
-  document.getElementById('terryTipText').innerHTML = tip;
+var allJobs = [];
+var activeFilter = 'all';
 
 function setFilter(filter, btn) {
   activeFilter = filter;
-  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-tab').forEach(function(b) { b.classList.remove('active'); });
   btn.classList.add('active');
   renderJobs();
 }
 
 function renderJobs() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  let jobs = allJobs;
-  if (activeFilter !== 'all') jobs = jobs.filter(j => j.status === activeFilter);
-  if (q) jobs = jobs.filter(j =>
-    j.name.toLowerCase().includes(q) ||
-    j.desc.toLowerCase().includes(q) ||
-    j.id.toLowerCase().includes(q)
-  );
+  var q = document.getElementById('searchInput').value.toLowerCase();
+  var jobs = allJobs;
+  if (activeFilter !== 'all') {
+    jobs = jobs.filter(function(j) { return j.status === activeFilter; });
+  }
+  if (q) {
+    jobs = jobs.filter(function(j) {
+      return (j.name && j.name.toLowerCase().includes(q)) ||
+             (j.desc && j.desc.toLowerCase().includes(q)) ||
+             (j.id && j.id.toLowerCase().includes(q));
+    });
+  }
 
-  const list  = document.getElementById('jobList');
-  const empty = document.getElementById('emptyState');
+  var list  = document.getElementById('jobList');
+  var empty = document.getElementById('emptyState');
 
-  if (!jobs.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  if (!jobs.length) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
   empty.classList.add('hidden');
 
-  list.innerHTML = jobs.map(job => {
-    let actions = '';
+  var html = '';
+  for (var i = 0; i < jobs.length; i++) {
+    var job = jobs[i];
+    var actions = '';
     if (job.status === 'overdue') {
-      actions = '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();TerryBot.showToast(\'Chase sent! 📧\')">Chase 🔔</button><button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
+      actions = '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();TerryBot.showToast(\'Chase sent! \uD83D\uDCE7\')">Chase \uD83D\uDD14</button>' +
+                '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
     } else if (job.status === 'pending') {
-      actions = '<button class="btn btn-sm btn-navy" onclick="event.stopPropagation();TerryBot.showToast(\'Invoice sent! 📧\')">Send 📧</button><button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
+      actions = '<button class="btn btn-sm btn-navy" onclick="event.stopPropagation();TerryBot.showToast(\'Invoice sent! \uD83D\uDCE7\')">Send \uD83D\uDCE7</button>' +
+                '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
     } else {
       actions = '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View PDF</button>';
     }
-    return '<div class="job-card" onclick="window.location.href=\'invoice-view.html?id=' + job.id + '\'">' +
+    html += '<div class="job-card" onclick="window.location.href=\'invoice-view.html?id=' + job.id + '\'">' +
       '<div class="job-card-top">' +
         '<div>' +
-          '<div class="job-card-name">' + job.name + '</div>' +
+          '<div class="job-card-name">' + (job.name || '') + '</div>' +
           '<div class="job-card-meta">' +
             '<span class="badge badge-' + job.status + '">' + job.status + '</span>' +
-            '<span style="font-size:12px;font-weight:600;color:var(--muted)">' + job.desc + '</span>' +
+            '<span style="font-size:12px;font-weight:600;color:var(--muted)">' + (job.desc || '') + '</span>' +
           '</div>' +
-          '<div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">📍 ' + job.addr + ' · ' + job.date + '</div>' +
+          '<div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">' + (job.addr || '') + ' · ' + (job.date || '') + '</div>' +
         '</div>' +
         '<div style="text-align:right;flex-shrink:0;margin-left:12px">' +
-          '<div class="job-card-amount">' + TerryBot.formatCurrency(job.amount) + '</div>' +
+          '<div class="job-card-amount">' + TerryBot.formatCurrency(job.amount || 0) + '</div>' +
         '</div>' +
       '</div>' +
       '<div class="job-card-bottom">' +
@@ -169,13 +137,47 @@ function renderJobs() {
         '<div class="job-actions">' + actions + '</div>' +
       '</div>' +
     '</div>';
-  }).join('');
+  }
+  list.innerHTML = html;
 }
 
-renderJobs();
+async function init() {
+  var session = await requireAuth();
+  if (!session) return;
+  clearDemoData();
+
+  allJobs = await dbLoadJobs(session.user.id);
+  TerryBot.setJobs(allJobs);
+
+  var paid    = allJobs.filter(function(j) { return j.status === 'paid'; }).length;
+  var pending = allJobs.filter(function(j) { return j.status === 'pending'; }).length;
+  var overdue = allJobs.filter(function(j) { return j.status === 'overdue'; }).length;
+
+  document.getElementById('paidCount').textContent    = paid;
+  document.getElementById('pendingCount').textContent = pending;
+  document.getElementById('overdueCount').textContent = overdue;
+
+  var tip = '';
+  if (overdue > 0) {
+    tip = 'You have <strong>' + overdue + ' overdue invoice' + (overdue > 1 ? 's' : '') + '</strong>. Chase them today - a quick text is usually all it takes!';
+  } else if (pending > 0) {
+    tip = 'You have <strong>' + pending + ' pending invoice' + (pending > 1 ? 's' : '') + '</strong>. Make sure they have been sent!';
+  } else if (allJobs.length === 0) {
+    tip = 'No jobs yet! Tap <strong>+</strong> below to create your first invoice.';
+  } else {
+    tip = 'All your invoices are paid - nice work! Tap <strong>+</strong> to create a new one.';
+  }
+  document.getElementById('terryTipText').innerHTML = tip;
+
+  renderJobs();
 }
 
-initJobs();
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.replace('login.html');
+}
+
+init();
 </script>
 </body>
 </html>
