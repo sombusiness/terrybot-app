@@ -166,6 +166,7 @@
 <script src="js/supabase-client.js"></script>
 <script>
 async function initDashboard() {
+  try {
   var session = await requireAuth();
   if (!session) return;
   var authUser = session.user;
@@ -256,6 +257,7 @@ async function initDashboard() {
   document.getElementById('taxIncome').textContent = TerryBot.formatCurrency(tax.totalIncome);
   document.getElementById('taxExpenses').textContent = '-' + TerryBot.formatCurrency(tax.totalExpenses);
   document.getElementById('taxTotal').textContent = TerryBot.formatCurrency(tax.totalTax);
+  } catch(e) { console.error("initDashboard error:", e); }
 }
 
 async function signOut() {
@@ -263,7 +265,12 @@ async function signOut() {
   window.location.replace('login.html');
 }
 
-initDashboard();
+if (typeof requireAuth === "function") {
+  initDashboard();
+} else {
+  document.addEventListener("DOMContentLoaded", initDashboard);
+  setTimeout(initDashboard, 500);
+}
 </script>
 </body>
 </html>
