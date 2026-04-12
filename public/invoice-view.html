@@ -114,37 +114,40 @@ async function init() {
   if (!session) return;
   UID = session.user.id;
 
-  // Load profile
   var pr = await _sb.from("profiles").select("*").eq("id", UID).single();
   var p = pr.data || {};
   USER = {
-    name: p.name || session.user.user_metadata && session.user.user_metadata.name || "",
-    biz:  p.business_name || "",
+    name:  p.name  || (session.user.user_metadata && session.user.user_metadata.name) || "",
+    biz:   p.business_name || "",
     phone: p.phone || "",
     email: session.user.email || ""
   };
 
-  // Get job id from URL
   var jobId = new URLSearchParams(window.location.search).get("id");
-
-  // Query Supabase
   var jr = await _sb.from("jobs").select("*").eq("job_id", jobId).eq("user_id", UID).single();
   var row = jr.data;
   if (!row) {
     var jr2 = await _sb.from("jobs").select("*").eq("job_id", jobId).single();
     row = jr2.data;
   }
-
   if (!row) {
-    document.querySelector(".main").innerHTML = "<div style='text-align:center;padding:3rem'><div style='font-size:48px'>&#x1F50D;</div><div style='font-size:18px;font-weight:800;margin-top:1rem'>Invoice not found</div><div style='color:var(--muted);margin-top:8px'>ID: " + jobId + "</div></div>";
+    document.querySelector(".main").innerHTML = "<div style='text-align:center;padding:3rem'><div style='font-size:48px'>&#x1F50D;</div><div style='font-size:18px;font-weight:800;margin-top:1rem'>Invoice not found</div></div>";
     return;
   }
 
-  JOB = { id: row.job_id, name: row.name, addr: row.addr, email: row.email,
-    desc: row.description, date: row.date, due: row.due,
-    amount: parseFloat(row.amount), status: row.status,
-    lines: row.lines || [], notes: row.notes || "" };
-
+  JOB = {
+    id:     row.job_id,
+    name:   row.name,
+    addr:   row.addr,
+    email:  row.email,
+    desc:   row.description,
+    date:   row.date,
+    due:    row.due,
+    amount: parseFloat(row.amount),
+    status: row.status,
+    lines:  row.lines || [],
+    notes:  row.notes || ""
+  };
   render();
 }
 
@@ -152,26 +155,25 @@ function render() {
   var job = JOB;
   var user = USER;
 
-  // Hero
   var badge = document.getElementById("statusBadge");
   if (job.status === "paid") {
-    badge.textContent = "Paid"; badge.className = "terry-hero-badge paid";
+    badge.textContent = "Paid";
+    badge.className = "terry-hero-badge paid";
     document.getElementById("heroTitle").textContent = "Payment received!";
     document.getElementById("heroMsg").innerHTML = "Lovely stuff! <strong>" + job.name + "</strong> has paid up.";
     document.getElementById("terryImg").src = "images/terry-thumbs-up-v2.png";
   } else if (job.status === "overdue") {
-    badge.textContent = "Overdue"; badge.className = "terry-hero-badge overdue";
+    badge.textContent = "Overdue";
+    badge.className = "terry-hero-badge overdue";
     document.getElementById("heroTitle").textContent = job.name + " has not paid!";
     document.getElementById("heroMsg").innerHTML = "This invoice is <strong>overdue</strong>.";
-    document.getElementById("terryImg").src = "images/terry-invoice-v2.png";
   } else {
-    badge.textContent = "Pending"; badge.className = "terry-hero-badge pending";
+    badge.textContent = "Pending";
+    badge.className = "terry-hero-badge pending";
     document.getElementById("heroTitle").textContent = "Waiting on payment";
     document.getElementById("heroMsg").innerHTML = "Payment due <strong>" + job.due + "</strong>.";
-    document.getElementById("terryImg").src = "images/terry-invoice-v2.png";
   }
 
-  // Invoice fields
   document.getElementById("invNum").textContent = "#" + job.id;
   document.getElementById("invDate").textContent = job.date;
   document.getElementById("bizName").textContent = user.biz || user.name;
@@ -179,9 +181,13 @@ function render() {
   document.getElementById("custName").textContent = job.name;
   document.getElementById("custDetail").innerHTML = (job.addr || "") + "<br>" + (job.email || "");
   document.getElementById("invDue").textContent = "Payment due: " + job.due;
-  if (job.notes) { var n = document.getElementById("invNotes"); n.textContent = job.notes; n.style.display = "block"; }
 
-  // Lines
+  if (job.notes) {
+    var n = document.getElementById("invNotes");
+    n.textContent = job.notes;
+    n.style.display = "block";
+  }
+
   var tbody = document.getElementById("lineItems");
   tbody.innerHTML = "";
   var sub = 0;
@@ -194,7 +200,6 @@ function render() {
   document.getElementById("subtotal").textContent = "&#xA3;" + sub.toFixed(2);
   document.getElementById("totalAmt").textContent = "&#xA3;" + sub.toFixed(2);
 
-  // Timeline
   var steps = [
     { label: "Invoice created", sub: job.date, done: true },
     { label: "Invoice sent", sub: job.date, done: true },
@@ -210,23 +215,18 @@ function render() {
       "<div class='timeline-sub'>" + s.sub + "</div></div></div>";
   }).join("");
 
-  // Actions
   var sec = document.getElementById("actionSection");
-  var html = "";
+  var btns = "<div class='action-grid' style='margin-bottom:10px'>";
+  btns += "<div class='action-card' onclick='downloadPDF()'><div class='action-card-icon'>&#x1F4C4;</div><div class='action-card-label'>Download PDF</div></div>";
   if (job.status !== "paid") {
-    html += "<div class='action-grid' style='margin-bottom:10px'>";
-    html += "<div class='action-card' onclick='downloadPDF()'><div class='action-card-icon'>&#x1F4C4;</div><div class='action-card-label'>Download PDF</div></div>";
-    html += "<div class='action-card' onclick='openModal()'><div class='action-card-icon'>&#x2705;</div><div class='action-card-label'>Mark as paid</div></div>";
-    html += "</div>";
-  } else {
-    html += "<div class='action-grid' style='margin-bottom:10px'>";
-    html += "<div class='action-card' onclick='downloadPDF()'><div class='action-card-icon'>&#x1F4C4;</div><div class='action-card-label'>Download PDF</div></div>";
-    html += "</div>";
+    btns += "<div class='action-card' onclick='openModal()'><div class='action-card-icon'>&#x2705;</div><div class='action-card-label'>Mark as paid</div></div>";
   }
-  html += "<button class='btn btn-outline btn-full' onclick="window.location.href='jobs.html'">&#8592; Back to all jobs</button>";
-  sec.innerHTML = html;
+  btns += "</div>";
+  btns += "<button class='btn btn-outline btn-full' onclick='goBack()'>&#8592; Back to all jobs</button>";
+  sec.innerHTML = btns;
 }
 
+function goBack() { window.location.href = "jobs.html"; }
 function openModal()  { document.getElementById("paidModal").classList.add("open"); }
 function closeModal() { document.getElementById("paidModal").classList.remove("open"); }
 
@@ -248,11 +248,12 @@ function downloadPDF() {
   var user = USER;
   var jsPDF = window.jspdf.jsPDF;
   var doc = new jsPDF({ unit: "mm", format: "a4" });
-  var N=[27,43,75], Y=[245,197,24], W=[255,255,255], G=[244,246,250], M=[107,114,128], T=[17,24,39];
+  var N=[27,43,75], Y=[245,197,24], W=[255,255,255], G=[244,246,250], MU=[107,114,128], TX=[17,24,39];
   var PW=210, PH=297, MG=16;
   doc.setFillColor.apply(doc,N); doc.rect(0,0,PW,38,"F");
   doc.setTextColor.apply(doc,W); doc.setFont("helvetica","bold"); doc.setFontSize(18);
-  doc.text("Terry",MG,16); var tw=doc.getTextWidth("Terry");
+  doc.text("Terry",MG,16);
+  var tw = doc.getTextWidth("Terry");
   doc.setTextColor.apply(doc,Y); doc.text("Bot",MG+tw,16);
   doc.setTextColor(200,210,230); doc.setFontSize(7); doc.setFont("helvetica","normal");
   doc.text("Trade Invoices & Tax",MG,22);
@@ -261,20 +262,21 @@ function downloadPDF() {
   doc.setTextColor(200,210,230); doc.setFontSize(8); doc.setFont("helvetica","normal");
   doc.text("Issued: "+job.date,PW-MG,20,{align:"right"});
   doc.text("Due: "+job.due,PW-MG,26,{align:"right"});
-  var y=48;
-  var hw=(PW-MG*2)/2;
-  doc.setFillColor.apply(doc,G); doc.roundedRect(MG,y,hw-4,32,2,2,"F"); doc.roundedRect(MG+hw+4,y,hw-4,32,2,2,"F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor.apply(doc,M);
+  var y=48, hw=(PW-MG*2)/2;
+  doc.setFillColor.apply(doc,G);
+  doc.roundedRect(MG,y,hw-4,32,2,2,"F");
+  doc.roundedRect(MG+hw+4,y,hw-4,32,2,2,"F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(7); doc.setTextColor.apply(doc,MU);
   doc.text("FROM",MG+4,y+7); doc.text("BILL TO",MG+hw+8,y+7);
-  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor.apply(doc,T);
+  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor.apply(doc,TX);
   doc.text(user.biz||user.name||"",MG+4,y+14);
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor.apply(doc,M);
+  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor.apply(doc,MU);
   doc.text(user.email||"",MG+4,y+20);
-  if(user.phone) doc.text(user.phone,MG+4,y+26);
-  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor.apply(doc,T);
+  if (user.phone) doc.text(user.phone,MG+4,y+26);
+  doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor.apply(doc,TX);
   doc.text(job.name||"",MG+hw+8,y+14);
-  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor.apply(doc,M);
-  var al=doc.splitTextToSize(job.addr||"",hw-12);
+  doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor.apply(doc,MU);
+  var al = doc.splitTextToSize(job.addr||"",hw-12);
   al.slice(0,2).forEach(function(l,i){ doc.text(l,MG+hw+8,y+20+i*5); });
   y+=40;
   doc.setFillColor.apply(doc,N); doc.rect(MG,y,PW-MG*2,9,"F");
@@ -283,14 +285,14 @@ function downloadPDF() {
   y+=9;
   (job.lines||[]).forEach(function(line,i){
     doc.setFillColor.apply(doc,i%2===0?W:G); doc.rect(MG,y,PW-MG*2,10,"F");
-    doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc,T);
+    doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor.apply(doc,TX);
     doc.text((doc.splitTextToSize(line.d||"",PW-MG*2-50)[0]),MG+4,y+6.5);
     doc.setFont("helvetica","bold"); doc.text("£"+line.a.toFixed(2),PW-MG-4,y+6.5,{align:"right"});
     y+=10;
   });
   y+=4;
   doc.setDrawColor(220,224,230); doc.line(MG,y,PW-MG,y); y+=5;
-  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor.apply(doc,T);
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor.apply(doc,TX);
   doc.text("£"+job.amount.toFixed(2),PW-MG-4,y,{align:"right"});
   y+=10;
   doc.setFillColor.apply(doc,N); doc.rect(0,PH-20,PW,20,"F");
