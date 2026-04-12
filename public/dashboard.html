@@ -164,17 +164,7 @@
 
 <script src="js/app.js"></script>
 <script src="js/supabase-client.js"></script>
-script>
 <script>
-const _sb = supabase.createClient(
-  'https://gavyzfmixpeddxqqdhzp.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhdnl6Zm1peHBlZGR4cXFkaHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDQ0MzYsImV4cCI6MjA5MTUyMDQzNn0.6SqiqqGeH-an2FYhqaVDh1J_CVerhzG8YqbbDePttPM'
-);
-
-async function signOut() {
-  await _sb.auth.signOut();
-  window.location.replace('login.html');
-}
 
 async function initDashboard() {
   const session = await requireAuth();
