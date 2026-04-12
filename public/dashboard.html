@@ -165,75 +165,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script src="js/supabase-client.js"></script>
-<script>
-(function() {
-  TerryBot.initNav('index');
-  const stats = TerryBot.getStats();
-  const tax   = TerryBot.calcTax();
-  const user  = TerryBot.getUser();
-  const hour  = new Date().getHours();
-
-  // Hero
-  const emoji = TerryBot.getGreetingEmoji();
-  document.getElementById('heroBadge').textContent = emoji + ' ' + TerryBot.getGreeting();
-  if (stats.overdueCount > 0) {
-    document.getElementById('heroHeading').textContent = 'You have overdue invoices!';
-    document.getElementById('heroSub').innerHTML = stats.overdueCount + ' invoice' + (stats.overdueCount > 1 ? 's' : '') + ' past due — <strong>take action today.</strong>';
-  } else if (stats.unpaidCount > 0) {
-    document.getElementById('heroHeading').textContent = 'Ready to get paid? 💪';
-    document.getElementById('heroSub').innerHTML = stats.unpaidCount + ' invoice' + (stats.unpaidCount > 1 ? 's' : '') + ' outstanding · <strong>' + TerryBot.formatCurrency(stats.unpaidTotal) + ' due.</strong>';
-  } else {
-    document.getElementById('heroHeading').textContent = 'All invoices paid! 🎉';
-    document.getElementById('heroSub').textContent = 'Great work, ' + user.name + '. Nothing outstanding right now.';
-  }
-
-  // Stats
-  document.getElementById('statEarned').textContent    = TerryBot.formatCurrency(stats.earnedThisMonth);
-  document.getElementById('statPaidCount').textContent = stats.paidCount + ' invoice' + (stats.paidCount !== 1 ? 's' : '') + ' paid';
-  document.getElementById('statUnpaid').textContent    = TerryBot.formatCurrency(stats.unpaidTotal);
-  document.getElementById('statUnpaidCount').textContent = stats.unpaidCount + ' outstanding';
-  document.getElementById('statOverdue').textContent   = stats.overdueCount + (stats.overdueCount === 1 ? ' job' : ' jobs');
-  document.getElementById('statTax').textContent       = TerryBot.formatCurrency(tax.totalTax);
-
-  // Recent jobs
-  const jobs = TerryBot.getJobs().slice(0, 4);
-  document.getElementById('recentJobsList').innerHTML = jobs.map(job => {
-    const dotClass = {paid:'dot-green', pending:'dot-orange', overdue:'dot-red'}[job.status] || 'dot-gray';
-    return `<div class="job-row" onclick="window.location.href='invoice-view.html?id=${job.id}'">
-      <div class="job-dot ${dotClass}"></div>
-      <div class="job-info">
-        <div class="job-name">${job.name}</div>
-        <div class="job-desc">${job.desc} · ${job.date}</div>
-      </div>
-      <div style="text-align:right">
-        <div class="job-amount">${TerryBot.formatCurrency(job.amount)}</div>
-        <span class="badge badge-${job.status}">${job.status}</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  // Terry tip
-  let tip = '';
-  if (stats.overdueCount > 0) {
-    tip = 'You have <strong>' + stats.overdueCount + ' overdue invoice' + (stats.overdueCount > 1 ? 's' : '') + '</strong> totalling <strong>' + TerryBot.formatCurrency(stats.overdueTotal) + '</strong>. Pop them a friendly chase — most people just forget!';
-  } else if (tax.totalTax > 0) {
-    const perMonth = Math.round(tax.totalTax / 9);
-    tip = 'Your estimated tax bill is <strong>' + TerryBot.formatCurrency(tax.totalTax) + '</strong>. Try setting aside <strong>' + TerryBot.formatCurrency(perMonth) + '/month</strong> so it\'s never a nasty surprise at Self Assessment time.';
-  } else {
-    tip = 'Keep logging your expenses! Every receipt counts — tools, fuel, workwear, and materials all reduce your tax bill.';
-  }
-  document.getElementById('terryTipText').innerHTML = tip;
-
-  // Tax year
-  const pct = TerryBot.getTaxYearProgress();
-  document.getElementById('taxYearLabel').textContent = TerryBot.getTaxYearLabel();
-  document.getElementById('taxYearPct').textContent   = pct + '%';
-  document.getElementById('taxYearBar').style.width   = pct + '%';
-  document.getElementById('taxIncome').textContent    = TerryBot.formatCurrency(tax.totalIncome);
-  document.getElementById('taxExpenses').textContent  = '−' + TerryBot.formatCurrency(tax.totalExpenses);
-  document.getElementById('taxTotal').textContent     = TerryBot.formatCurrency(tax.totalTax);
-})();
-</script>
+script>
 <script>
 const _sb = supabase.createClient(
   'https://gavyzfmixpeddxqqdhzp.supabase.co',
