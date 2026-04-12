@@ -164,6 +164,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
 <script>
 (function() {
   TerryBot.initNav('index');
@@ -245,49 +246,54 @@ async function signOut() {
 }
 
 async function initDashboard() {
-  const { data: { session } } = await _sb.auth.getSession();
-  if (!session) { window.location.replace('login.html'); return; }
+  const session = await requireAuth();
+  if (!session) return;
 
   const authUser = session.user;
+  clearDemoData();
 
-  // Load profile from Supabase
-  const { data: profile } = await _sb.from('profiles').select('*').eq('id', authUser.id).single();
+  // Load profile + jobs + expenses from Supabase in parallel
+  const [profileRes, jobs, expenses] = await Promise.all([
+    _sb.from('profiles').select('*').eq('id', authUser.id).single(),
+    dbLoadJobs(authUser.id),
+    dbLoadExpenses(authUser.id)
+  ]);
 
-  // Build real user object from Supabase profile
+  const profile = profileRes.data;
+
+  // Set real user data — overwrites any demo localStorage
   const realName         = profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '';
   const realBusinessName = profile?.business_name || authUser.user_metadata?.business_name || '';
-  const realPhone        = profile?.phone || '';
-  const realEmail        = authUser.email || '';
 
-  // Overwrite localStorage with real user data — clears demo data
   TerryBot.setUser({
-    name:         realName,
-    businessName: realBusinessName,
-    phone:        realPhone,
-    email:        realEmail,
-    vatRegistered: profile?.vat_registered || false,
-    vatNumber:    profile?.vat_number || ''
+    name: realName, businessName: realBusinessName,
+    phone: profile?.phone || '', email: authUser.email || '',
+    vatRegistered: profile?.vat_registered || false, vatNumber: profile?.vat_number || ''
   });
 
-  if (profile?.payment_terms || profile?.mileage_rate) {
-    TerryBot.setSettings({
-      currency: '£', taxRate: 20,
-      personalAllowance: profile.personal_allowance || 12570,
-      paymentTerms:      profile.payment_terms || 14,
-      mileageRate:       profile.mileage_rate || 0.45,
-      defaultNotes:      ''
-    });
-  }
+  TerryBot.setSettings({
+    currency: '£', taxRate: 20,
+    personalAllowance: profile?.personal_allowance || 12570,
+    paymentTerms:      profile?.payment_terms || 14,
+    mileageRate:       profile?.mileage_rate || 0.45,
+    defaultNotes: ''
+  });
 
-  // Now re-run the dashboard JS with real data
+  // Store real jobs and expenses from Supabase
+  TerryBot.setJobs(jobs);
+  TerryBot.setExpenses(expenses);
+
+  // Greeting
   const hour = new Date().getHours();
   const emoji = hour < 12 ? '☀️' : hour < 17 ? '👋' : '🌙';
   const greeting = (hour < 12 ? 'Good morning, ' : hour < 17 ? 'Good afternoon, ' : 'Good evening, ') + realName + '!';
   document.getElementById('heroBadge').textContent = emoji + ' ' + greeting;
 
+  // Stats from real data
   const stats = TerryBot.getStats();
   const tax   = TerryBot.calcTax();
 
+  // Hero message
   if (stats.overdueCount > 0) {
     document.getElementById('heroHeading').textContent = 'You have overdue invoices!';
     document.getElementById('heroSub').innerHTML = stats.overdueCount + ' invoice' + (stats.overdueCount > 1 ? 's' : '') + ' past due — <strong>take action today.</strong>';
@@ -295,9 +301,54 @@ async function initDashboard() {
     document.getElementById('heroHeading').textContent = 'Ready to get paid? 💪';
     document.getElementById('heroSub').innerHTML = stats.unpaidCount + ' invoice' + (stats.unpaidCount > 1 ? 's' : '') + ' outstanding · <strong>' + TerryBot.formatCurrency(stats.unpaidTotal) + ' due.</strong>';
   } else {
-    document.getElementById('heroHeading').textContent = 'All invoices paid! 🎉';
-    document.getElementById('heroSub').textContent = 'Great work, ' + realName + '. Nothing outstanding right now.';
+    document.getElementById('heroHeading').textContent = realName ? 'Ready to get paid? 💪' : 'Welcome to TerryBot! 🔨';
+    document.getElementById('heroSub').textContent = jobs.length === 0
+      ? 'Create your first invoice to get started!'
+      : 'Great work, ' + realName + '. Nothing outstanding right now.';
   }
+
+  // Stats cards
+  document.getElementById('statEarned').textContent    = TerryBot.formatCurrency(stats.earnedThisMonth);
+  document.getElementById('statPaidCount').textContent = stats.paidCount + ' invoice' + (stats.paidCount !== 1 ? 's' : '') + ' paid';
+  document.getElementById('statUnpaid').textContent    = TerryBot.formatCurrency(stats.unpaidTotal);
+  document.getElementById('statUnpaidCount').textContent = stats.unpaidCount + ' outstanding';
+  document.getElementById('statOverdue').textContent   = stats.overdueCount + (stats.overdueCount === 1 ? ' job' : ' jobs');
+  document.getElementById('statTax').textContent       = TerryBot.formatCurrency(tax.totalTax);
+
+  // Recent jobs list
+  const recentJobs = jobs.slice(0, 4);
+  document.getElementById('recentJobsList').innerHTML = recentJobs.length === 0
+    ? '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:14px;font-weight:600">No invoices yet — <a href="invoice.html" style="color:var(--navy);font-weight:800">create your first one!</a></div>'
+    : recentJobs.map(job => {
+        const dotClass = {paid:'dot-green', pending:'dot-orange', overdue:'dot-red'}[job.status] || 'dot-gray';
+        return '<div class="job-row" onclick="window.location.href='invoice-view.html?id=' + job.id + ''">' +
+          '<div class="job-dot ' + dotClass + '"></div>' +
+          '<div class="job-info"><div class="job-name">' + job.name + '</div><div class="job-desc">' + job.desc + ' · ' + job.date + '</div></div>' +
+          '<div style="text-align:right"><div class="job-amount">' + TerryBot.formatCurrency(job.amount) + '</div><span class="badge badge-' + job.status + '">' + job.status + '</span></div>' +
+        '</div>';
+      }).join('');
+
+  // Terry tip
+  let tip = '';
+  if (stats.overdueCount > 0) {
+    const perMonth = Math.round(tax.totalTax / 9);
+    tip = 'You have <strong>' + stats.overdueCount + ' overdue invoice' + (stats.overdueCount > 1 ? 's' : '') + '</strong> totalling <strong>' + TerryBot.formatCurrency(stats.overdueTotal) + '</strong>. Pop them a friendly chase — most people just forget!';
+  } else if (tax.totalTax > 0) {
+    const perMonth = Math.round(tax.totalTax / 9);
+    tip = 'Your estimated tax bill is <strong>' + TerryBot.formatCurrency(tax.totalTax) + '</strong>. Try setting aside <strong>' + TerryBot.formatCurrency(perMonth) + '/month</strong> so January's never a nasty surprise!';
+  } else {
+    tip = 'Keep logging your expenses! Every receipt counts — tools, fuel, workwear and materials all reduce your tax bill.';
+  }
+  document.getElementById('terryTipText').innerHTML = tip;
+
+  // Tax year
+  const pct = TerryBot.getTaxYearProgress();
+  document.getElementById('taxYearLabel').textContent = TerryBot.getTaxYearLabel();
+  document.getElementById('taxYearPct').textContent   = pct + '%';
+  document.getElementById('taxYearBar').style.width   = pct + '%';
+  document.getElementById('taxIncome').textContent    = TerryBot.formatCurrency(tax.totalIncome);
+  document.getElementById('taxExpenses').textContent  = '−' + TerryBot.formatCurrency(tax.totalExpenses);
+  document.getElementById('taxTotal').textContent     = TerryBot.formatCurrency(tax.totalTax);
 }
 
 initDashboard();

@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <meta name="theme-color" content="#1B2B4B"/>
 <style>
@@ -63,7 +64,10 @@
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </div>
-  <div class="nav-back" onclick="window.location.href='index.html'">← Dashboard</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-back" onclick="window.location.href='dashboard.html'">← Dashboard</div>
+    <button onclick="signOut()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:Nunito,sans-serif">Sign out</button>
+  </div>
 </nav>
 
 <div class="main">
@@ -196,12 +200,42 @@
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
 <script>
 let currentStep = 1;
 let createdJob  = null;
 let lineItemCount = 0;
+let _userId = null;
 
 TerryBot.initNav('jobs');
+
+// Auth check
+requireAuth().then(session => {
+  if (!session) return;
+  _userId = session.user.id;
+  clearDemoData();
+  // Load real user settings
+  return _sb.from('profiles').select('*').eq('id', session.user.id).single();
+}).then(({ data: profile } = {}) => {
+  if (profile) {
+    TerryBot.setUser({
+      name: profile.name, businessName: profile.business_name,
+      phone: profile.phone, email: profile.email,
+      vatRegistered: profile.vat_registered, vatNumber: profile.vat_number
+    });
+    TerryBot.setSettings({
+      currency: '£', taxRate: 20,
+      personalAllowance: profile.personal_allowance || 12570,
+      paymentTerms: profile.payment_terms || 14,
+      mileageRate: profile.mileage_rate || 0.45,
+      defaultNotes: ''
+    });
+    if (profile.vat_registered) document.getElementById('vatToggleWrap').style.display = 'block';
+    if (profile.payment_terms) {
+      const s = TerryBot.getSettings();
+    }
+  }
+}).catch(() => {});
 const settings = TerryBot.getSettings();
 document.getElementById('vatToggleWrap').style.display = 'block';
 if (settings.defaultNotes) document.getElementById('invoiceNotes').value = settings.defaultNotes;
@@ -393,6 +427,11 @@ function createInvoice() {
   jobs.unshift(job);
   TerryBot.setJobs(jobs);
   createdJob = job;
+
+  // Save to Supabase
+  if (_userId) {
+    dbSaveJob(job, _userId).catch(console.error);
+  }
 
   const user = TerryBot.getUser();
   document.getElementById('successHeading').textContent = 'Nice one, ' + user.name + '! 🎉';

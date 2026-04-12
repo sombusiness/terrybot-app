@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="theme-color" content="#1B2B4B"/>
 <style>
 .summary-bar{background:var(--navy);border-radius:14px;padding:1rem 1.25rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.25rem}
@@ -50,7 +51,10 @@
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </div>
-  <div class="nav-back" onclick="window.location.href='index.html'">← Dashboard</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-back" onclick="window.location.href='dashboard.html'">← Dashboard</div>
+    <button onclick="signOut()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:Nunito,sans-serif">Sign out</button>
+  </div>
 </nav>
 
 <div class="main" id="mainContent">
@@ -192,11 +196,27 @@
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
 <script>
 let activeTab = 'snap';
 let selectedCatSnap = '';
 let selectedCatType = '';
+let _userId = null;
 const today = new Date().toISOString().split('T')[0];
+
+// Auth check and load real expenses
+async function initExpenses() {
+  const session = await requireAuth();
+  if (!session) return;
+  _userId = session.user.id;
+  clearDemoData();
+  // Load expenses from Supabase
+  const expenses = await dbLoadExpenses(_userId);
+  TerryBot.setExpenses(expenses);
+  buildSummary();
+  buildExpenseList();
+}
+initExpenses();
 document.getElementById('snapDate').value = today;
 document.getElementById('typeDate').value = today;
 
@@ -273,7 +293,11 @@ function saveExpense() {
   if (!amount || amount <= 0) { TerryBot.showToast('Please enter an amount'); return; }
   if (!cat)             { TerryBot.showToast('Please pick a category'); return; }
   if (!date)            { TerryBot.showToast('Please select a date'); return; }
-  TerryBot.addExpense({ desc, cat, amount, date });
+  const expense = TerryBot.addExpense({ desc, cat, amount, date });
+  // Save to Supabase
+  if (_userId) {
+    dbSaveExpense(expense, _userId).catch(console.error);
+  }
   document.getElementById('mainContent').classList.add('hidden');
   document.getElementById('successScreen').classList.remove('hidden');
   window.scrollTo({top:0, behavior:'smooth'});
