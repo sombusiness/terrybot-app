@@ -239,26 +239,68 @@ const _sb = supabase.createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhdnl6Zm1peHBlZGR4cXFkaHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDQ0MzYsImV4cCI6MjA5MTUyMDQzNn0.6SqiqqGeH-an2FYhqaVDh1J_CVerhzG8YqbbDePttPM'
 );
 
-// Check user is logged in
-_sb.auth.getSession().then(({ data: { session } }) => {
-  if (!session) {
-    window.location.replace('login.html');
-    return;
-  }
-  // Update greeting with real user name
-  const user = session.user;
-  const metaName = user.user_metadata?.name || user.email?.split('@')[0] || 'Dave';
-  // Store in TerryBot so existing JS picks it up
-  const existingUser = TerryBot.getUser();
-  if (metaName && metaName !== 'Dave') {
-    TerryBot.setUser({...existingUser, name: metaName});
-  }
-});
-
 async function signOut() {
   await _sb.auth.signOut();
   window.location.replace('login.html');
 }
+
+async function initDashboard() {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { window.location.replace('login.html'); return; }
+
+  const authUser = session.user;
+
+  // Load profile from Supabase
+  const { data: profile } = await _sb.from('profiles').select('*').eq('id', authUser.id).single();
+
+  // Build real user object from Supabase profile
+  const realName         = profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '';
+  const realBusinessName = profile?.business_name || authUser.user_metadata?.business_name || '';
+  const realPhone        = profile?.phone || '';
+  const realEmail        = authUser.email || '';
+
+  // Overwrite localStorage with real user data — clears demo data
+  TerryBot.setUser({
+    name:         realName,
+    businessName: realBusinessName,
+    phone:        realPhone,
+    email:        realEmail,
+    vatRegistered: profile?.vat_registered || false,
+    vatNumber:    profile?.vat_number || ''
+  });
+
+  if (profile?.payment_terms || profile?.mileage_rate) {
+    TerryBot.setSettings({
+      currency: '£', taxRate: 20,
+      personalAllowance: profile.personal_allowance || 12570,
+      paymentTerms:      profile.payment_terms || 14,
+      mileageRate:       profile.mileage_rate || 0.45,
+      defaultNotes:      ''
+    });
+  }
+
+  // Now re-run the dashboard JS with real data
+  const hour = new Date().getHours();
+  const emoji = hour < 12 ? '☀️' : hour < 17 ? '👋' : '🌙';
+  const greeting = (hour < 12 ? 'Good morning, ' : hour < 17 ? 'Good afternoon, ' : 'Good evening, ') + realName + '!';
+  document.getElementById('heroBadge').textContent = emoji + ' ' + greeting;
+
+  const stats = TerryBot.getStats();
+  const tax   = TerryBot.calcTax();
+
+  if (stats.overdueCount > 0) {
+    document.getElementById('heroHeading').textContent = 'You have overdue invoices!';
+    document.getElementById('heroSub').innerHTML = stats.overdueCount + ' invoice' + (stats.overdueCount > 1 ? 's' : '') + ' past due — <strong>take action today.</strong>';
+  } else if (stats.unpaidCount > 0) {
+    document.getElementById('heroHeading').textContent = 'Ready to get paid? 💪';
+    document.getElementById('heroSub').innerHTML = stats.unpaidCount + ' invoice' + (stats.unpaidCount > 1 ? 's' : '') + ' outstanding · <strong>' + TerryBot.formatCurrency(stats.unpaidTotal) + ' due.</strong>';
+  } else {
+    document.getElementById('heroHeading').textContent = 'All invoices paid! 🎉';
+    document.getElementById('heroSub').textContent = 'Great work, ' + realName + '. Nothing outstanding right now.';
+  }
+}
+
+initDashboard();
 </script>
 </body>
 </html>
