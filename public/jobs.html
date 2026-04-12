@@ -108,16 +108,7 @@ function renderJobs() {
   var html = '';
   for (var i = 0; i < jobs.length; i++) {
     var job = jobs[i];
-    var actions = '';
-    if (job.status === 'overdue') {
-      actions = '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();TerryBot.showToast(\'Chase sent! \uD83D\uDCE7\')">Chase \uD83D\uDD14</button>' +
-                '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
-    } else if (job.status === 'pending') {
-      actions = '<button class="btn btn-sm btn-navy" onclick="event.stopPropagation();TerryBot.showToast(\'Invoice sent! \uD83D\uDCE7\')">Send \uD83D\uDCE7</button>' +
-                '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
-    } else {
-      actions = '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View PDF</button>';
-    }
+    var actions = '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
     html += '<div class="job-card" onclick="window.location.href=\'invoice-view.html?id=' + job.id + '\'">' +
       '<div class="job-card-top">' +
         '<div>' +
