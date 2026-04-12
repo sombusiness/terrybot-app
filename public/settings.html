@@ -13,7 +13,7 @@
 <body>
 
 <nav>
-  <div class="nav-left" onclick="window.location.href='index.html'">
+  <div class="nav-left" onclick="window.location.href='dashboard.html'">
     <div class="nav-logo">T</div>
     <div>
       <div class="nav-brand">Terry<span>Bot</span></div>
@@ -26,32 +26,30 @@
   </div>
 </nav>
 
-<!-- TERRY TIP -->
 <div class="terry-tip" style="border-radius:0;margin-bottom:0;padding:1rem 1.25rem">
   <div class="terry-tip-img">
     <img src="images/terry-standing-v2.png" alt="Terry"/>
   </div>
   <div class="terry-tip-bubble">
     <div class="terry-tip-title">Your settings</div>
-    <p class="terry-tip-text" id="terrySettingsMsg">Keep your details up to date so your invoices always look sharp!</p>
+    <p class="terry-tip-text" id="terrySettingsMsg">Loading your profile...</p>
   </div>
 </div>
 
 <div class="main" style="margin-top:1.25rem">
 
-  <!-- YOUR PROFILE -->
   <div class="settings-section">
     <div class="settings-section-title">Your profile</div>
     <div class="settings-row">
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">Your name</label>
-        <input type="text" id="settingName" class="form-input" placeholder="e.g. Dave Smith"/>
+        <input type="text" id="settingName" class="form-input" placeholder="e.g. Shane Sommers"/>
       </div>
     </div>
     <div class="settings-row">
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">Business name</label>
-        <input type="text" id="settingBusiness" class="form-input" placeholder="e.g. Dave Smith Plumbing"/>
+        <input type="text" id="settingBusiness" class="form-input" placeholder="e.g. Sommers Plumbing"/>
       </div>
     </div>
     <div class="settings-row">
@@ -63,12 +61,11 @@
     <div class="settings-row">
       <div class="form-group" style="margin-bottom:0">
         <label class="form-label">Email address</label>
-        <input type="email" id="settingEmail" class="form-input" placeholder="e.g. dave@smithplumbing.co.uk"/>
+        <input type="email" id="settingEmail" class="form-input" style="opacity:0.6" disabled/>
       </div>
     </div>
   </div>
 
-  <!-- BUSINESS SETTINGS -->
   <div class="settings-section">
     <div class="settings-section-title">Business settings</div>
     <div class="settings-row">
@@ -78,7 +75,7 @@
           <div class="toggle-sub">Adds VAT to your invoices</div>
         </div>
         <label class="toggle-switch">
-          <input type="checkbox" id="settingVat"/>
+          <input type="checkbox" id="settingVat" onchange="document.getElementById('vatNumberRow').style.display=this.checked?'block':'none'"/>
           <span class="toggle-slider"></span>
         </label>
       </div>
@@ -117,7 +114,6 @@
     </div>
   </div>
 
-  <!-- INVOICE DEFAULTS -->
   <div class="settings-section">
     <div class="settings-section-title">Invoice defaults</div>
     <div class="settings-row">
@@ -128,26 +124,15 @@
     </div>
   </div>
 
-  <!-- SAVE -->
-  <button class="btn btn-navy btn-full" id="saveBtn">Save settings ✓</button>
+  <button class="btn btn-navy btn-full" id="saveBtn" onclick="saveSettings()">Save settings ✓</button>
 
-  <!-- DANGER ZONE -->
-  <div class="settings-section" style="margin-top:1rem">
-    <div class="settings-section-title">Danger zone</div>
-    <div class="settings-row">
-      <div style="margin-bottom:10px">
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px">Reset demo data</div>
-        <div style="font-size:12px;color:var(--muted);font-weight:600">Clears all jobs, expenses and settings and restores the original demo data.</div>
-      </div>
-      <button class="btn btn-danger btn-full" id="resetBtn">Reset all data</button>
-    </div>
+  <div class="app-version">TerryBot v1.0.0 — Built for UK tradesmen 🔨<br/>
+    <a href="privacy.html" style="color:var(--muted);font-size:11px">Privacy Policy</a> ·
+    <a href="terms.html" style="color:var(--muted);font-size:11px">Terms &amp; Conditions</a>
   </div>
-
-  <div class="app-version">TerryBot v1.0.0 — Built for UK tradesmen 🔨</div>
 
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <div class="nav-item" onclick="window.location.href='dashboard.html'"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
   <div class="nav-item" onclick="window.location.href='jobs.html'"><div class="nav-icon">📋</div><div class="nav-item-label">Invoices</div></div>
@@ -157,117 +142,102 @@
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
 <script>
-const _sb = supabase.createClient(
-  'https://gavyzfmixpeddxqqdhzp.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhdnl6Zm1peHBlZGR4cXFkaHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDQ0MzYsImV4cCI6MjA5MTUyMDQzNn0.6SqiqqGeH-an2FYhqaVDh1J_CVerhzG8YqbbDePttPM'
-);
-
 let _currentUser = null;
+
+async function init() {
+  const session = await requireAuth();
+  if (!session) return;
+  _currentUser = session.user;
+
+  const { data: profile } = await _sb.from('profiles')
+    .select('*')
+    .eq('id', _currentUser.id)
+    .single();
+
+  const meta = _currentUser.user_metadata || {};
+  document.getElementById('settingName').value         = profile?.name             || meta.name          || '';
+  document.getElementById('settingBusiness').value     = profile?.business_name    || meta.business_name || '';
+  document.getElementById('settingPhone').value        = profile?.phone            || '';
+  document.getElementById('settingEmail').value        = _currentUser.email        || '';
+  document.getElementById('settingVat').checked        = !!profile?.vat_registered;
+  document.getElementById('settingPaymentTerms').value = String(profile?.payment_terms    || 14);
+  document.getElementById('settingMileage').value      = String(profile?.mileage_rate     || 0.45);
+  document.getElementById('settingAllowance').value    = profile?.personal_allowance      || 12570;
+
+  if (profile?.vat_registered && profile?.vat_number) {
+    document.getElementById('vatNumberRow').style.display = 'block';
+    document.getElementById('settingVatNumber').value = profile.vat_number;
+  }
+
+  const name = profile?.name || meta.name || 'there';
+  document.getElementById('terrySettingsMsg').textContent =
+    'Hi ' + name + '! Keep your details accurate so your invoices always look sharp and professional.';
+}
+
+async function saveSettings() {
+  if (!_currentUser) { alert('Not logged in — please refresh the page'); return; }
+
+  const name               = document.getElementById('settingName').value.trim();
+  const business_name      = document.getElementById('settingBusiness').value.trim();
+  const phone              = document.getElementById('settingPhone').value.trim();
+  const vat_registered     = document.getElementById('settingVat').checked;
+  const vat_number         = document.getElementById('settingVatNumber').value.trim();
+  const payment_terms      = parseInt(document.getElementById('settingPaymentTerms').value) || 14;
+  const mileage_rate       = parseFloat(document.getElementById('settingMileage').value) || 0.45;
+  const personal_allowance = parseFloat(document.getElementById('settingAllowance').value) || 12570;
+
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  const { error } = await _sb.from('profiles').upsert({
+    id: _currentUser.id,
+    name, business_name, phone,
+    email: _currentUser.email,
+    vat_registered, vat_number,
+    payment_terms, mileage_rate, personal_allowance
+  });
+
+  if (error) {
+    console.error('Supabase save error:', error);
+    btn.textContent = 'Error — try again';
+    btn.style.background = 'var(--red)';
+    btn.disabled = false;
+    setTimeout(() => { btn.textContent = 'Save settings ✓'; btn.style.background = ''; }, 3000);
+    return;
+  }
+
+  // Update localStorage too so rest of app uses real name
+  TerryBot.setUser({
+    name, businessName: business_name, phone,
+    email: _currentUser.email,
+    vatRegistered: vat_registered, vatNumber: vat_number
+  });
+  TerryBot.setSettings({
+    currency: '£', taxRate: 20,
+    personalAllowance: personal_allowance,
+    paymentTerms: payment_terms,
+    mileageRate: mileage_rate,
+    defaultNotes: ''
+  });
+
+  btn.textContent = 'Saved! ✓';
+  btn.style.background = 'var(--green)';
+  btn.disabled = false;
+  setTimeout(() => { btn.textContent = 'Save settings ✓'; btn.style.background = ''; }, 2500);
+
+  document.getElementById('terrySettingsMsg').textContent =
+    'Sorted, ' + name + '! Your details are saved and your invoices will look the business.';
+}
 
 async function signOut() {
   await _sb.auth.signOut();
   window.location.replace('login.html');
 }
 
-// Load user from Supabase
-async function loadSettings() {
-  const { data: { session } } = await _sb.auth.getSession();
-  if (!session) { window.location.replace('login.html'); return; }
-  _currentUser = session.user;
-
-  // Try to get profile from Supabase
-  const { data: profile } = await _sb.from('profiles').select('*').eq('id', _currentUser.id).single();
-
-  // Fall back to metadata or localStorage
-  const meta = _currentUser.user_metadata || {};
-  const user = profile || {
-    name:          meta.name || TerryBot.getUser().name || '',
-    business_name: meta.business_name || TerryBot.getUser().businessName || '',
-    phone:         TerryBot.getUser().phone || '',
-    email:         _currentUser.email || '',
-    vat_registered: false,
-    vat_number:    '',
-    payment_terms: 14,
-    mileage_rate:  0.45,
-    personal_allowance: 12570
-  };
-
-  document.getElementById('settingName').value         = user.name || '';
-  document.getElementById('settingBusiness').value     = user.business_name || '';
-  document.getElementById('settingPhone').value        = user.phone || '';
-  document.getElementById('settingEmail').value        = _currentUser.email || '';
-  document.getElementById('settingVat').checked        = !!user.vat_registered;
-  document.getElementById('settingPaymentTerms').value = String(user.payment_terms || 14);
-  document.getElementById('settingMileage').value      = String(user.mileage_rate || 0.45);
-  document.getElementById('settingAllowance').value    = user.personal_allowance || 12570;
-
-  if (user.vat_registered && user.vat_number) {
-    document.getElementById('vatNumberRow').style.display = 'block';
-    document.getElementById('settingVatNumber').value = user.vat_number;
-  }
-
-  document.getElementById('terrySettingsMsg').textContent =
-    'Hi ' + (user.name || 'there') + '! Keep your details accurate so your invoices always look sharp and professional.';
-}
-
-TerryBot.initNav('settings');
-const user     = TerryBot.getUser();
-const settings = TerryBot.getSettings();
-
-document.getElementById('settingName').value     = user.name || '';
-document.getElementById('settingBusiness').value = user.businessName || '';
-document.getElementById('settingPhone').value    = user.phone || '';
-document.getElementById('settingEmail').value    = user.email || '';
-document.getElementById('settingVat').checked    = !!user.vatRegistered;
-document.getElementById('settingPaymentTerms').value = String(settings.paymentTerms || 14);
-document.getElementById('settingMileage').value  = String(settings.mileageRate || 0.45);
-document.getElementById('settingAllowance').value = settings.personalAllowance || 12570;
-if (settings.defaultNotes) document.getElementById('settingInvoiceNotes').value = settings.defaultNotes;
-
-if (user.vatRegistered) {
-  document.getElementById('vatNumberRow').style.display = 'block';
-  if (user.vatNumber) document.getElementById('settingVatNumber').value = user.vatNumber;
-}
-
-document.getElementById('terrySettingsMsg').textContent =
-  'Hi ' + user.name + '! Keep your details accurate so your invoices always look sharp and professional.';
-
-document.getElementById('settingVat').addEventListener('change', function() {
-  document.getElementById('vatNumberRow').style.display = this.checked ? 'block' : 'none';
-});
-
-document.getElementById('saveBtn').addEventListener('click', () => {
-  const updatedUser = {
-    name:          document.getElementById('settingName').value.trim(),
-    businessName:  document.getElementById('settingBusiness').value.trim(),
-    phone:         document.getElementById('settingPhone').value.trim(),
-    email:         document.getElementById('settingEmail').value.trim(),
-    vatRegistered: document.getElementById('settingVat').checked,
-    vatNumber:     document.getElementById('settingVatNumber').value.trim()
-  };
-  const updatedSettings = {
-    currency: '£', taxRate: 20,
-    personalAllowance: parseFloat(document.getElementById('settingAllowance').value) || 12570,
-    paymentTerms:      parseInt(document.getElementById('settingPaymentTerms').value) || 14,
-    mileageRate:       parseFloat(document.getElementById('settingMileage').value) || 0.45,
-    defaultNotes:      document.getElementById('settingInvoiceNotes').value.trim()
-  };
-  TerryBot.setUser(updatedUser);
-  TerryBot.setSettings(updatedSettings);
-  TerryBot.showToast('Settings saved! ✓');
-  const btn = document.getElementById('saveBtn');
-  btn.textContent = 'Saved! ✓'; btn.style.background = 'var(--green)';
-  setTimeout(() => { btn.textContent = 'Save settings ✓'; btn.style.background = ''; }, 2000);
-});
-
-document.getElementById('resetBtn').addEventListener('click', () => {
-  if (confirm('This will reset all data back to demo. Are you sure?')) {
-    TerryBot.resetData();
-    TerryBot.showToast('Data reset! Reloading...');
-    setTimeout(() => window.location.reload(), 900);
-  }
-});
+init();
 </script>
 </body>
 </html>
