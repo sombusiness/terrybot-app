@@ -247,13 +247,14 @@ async function initDashboard() {
   const recentJobs = jobs.slice(0, 4);
   document.getElementById('recentJobsList').innerHTML = recentJobs.length === 0
     ? '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:14px;font-weight:600">No invoices yet — <a href="invoice.html" style="color:var(--navy);font-weight:800">create your first one!</a></div>'
-    : recentJobs.map(job => {
-        const dotClass = {paid:'dot-green', pending:'dot-orange', overdue:'dot-red'}[job.status] || 'dot-gray';
-        return '<div class="job-row" onclick="window.location.href='invoice-view.html?id=' + job.id + ''">' +
+    : recentJobs.map(function(job) {
+        var dotClass = {paid:'dot-green', pending:'dot-orange', overdue:'dot-red'}[job.status] || 'dot-gray';
+        var url = 'invoice-view.html?id=' + job.id;
+        return '<div class="job-row" onclick="window.location.href=\'' + url + '\'">' +
           '<div class="job-dot ' + dotClass + '"></div>' +
-          '<div class="job-info"><div class="job-name">' + job.name + '</div><div class="job-desc">' + job.desc + ' · ' + job.date + '</div></div>' +
+          '<div class="job-info"><div class="job-name">' + job.name + '</div><div class="job-desc">' + (job.desc||'') + ' &middot; ' + job.date + '</div></div>' +
           '<div style="text-align:right"><div class="job-amount">' + TerryBot.formatCurrency(job.amount) + '</div><span class="badge badge-' + job.status + '">' + job.status + '</span></div>' +
-        '</div>';
+          '</div>';
       }).join('');
 
   // Terry tip
