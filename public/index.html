@@ -3,17 +3,21 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>TerryBot — Trade invoices &amp; tax made easy</title>
-<link rel="manifest" href="manifest.json"/>
-<meta name="theme-color" content="#1B2B4B"/>
+<title>TerryBot</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function() {
-  try {
-    var hasData = localStorage.getItem('tb_user') || localStorage.getItem('tb_jobs');
-    window.location.replace(hasData ? 'dashboard.html' : 'landing.html');
-  } catch(e) {
-    window.location.replace('landing.html');
-  }
+  const sb = supabase.createClient(
+    'https://gavyzfmixpeddxqqdhzp.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhdnl6Zm1peHBlZGR4cXFkaHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDQ0MzYsImV4cCI6MjA5MTUyMDQzNn0.6SqiqqGeH-an2FYhqaVDh1J_CVerhzG8YqbbDePttPM'
+  );
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) {
+      window.location.replace('dashboard.html');
+    } else {
+      window.location.replace('landing.html');
+    }
+  });
 })();
 </script>
 </head>

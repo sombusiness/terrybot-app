@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TerryBot — Reset password</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta name="theme-color" content="#1B2B4B"/>
+<style>
+body{display:flex;flex-direction:column;min-height:100vh;background:var(--navy)}
+.auth-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;max-width:420px;margin:0 auto;width:100%}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:2rem}
+.auth-logo-icon{width:52px;height:52px;background:var(--yellow);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:var(--navy)}
+.auth-logo-text{color:white;font-size:28px;font-weight:900}
+.auth-logo-text span{color:var(--yellow)}
+.auth-card{background:white;border-radius:20px;padding:2rem;width:100%}
+.auth-title{font-size:22px;font-weight:900;color:var(--navy);margin-bottom:4px}
+.auth-sub{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:1.5rem;line-height:1.6}
+.form-group{margin-bottom:1rem}
+.form-label{font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px;display:block}
+.form-input{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'Nunito',sans-serif;color:var(--text);background:white;outline:none;font-weight:600}
+.form-input:focus{border-color:var(--navy)}
+.btn-auth{width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-bottom:10px}
+.btn-navy{background:var(--navy);color:white}
+.btn-outline{background:white;color:var(--muted);border:1.5px solid var(--border)}
+.error-msg{background:var(--red-light);border:1px solid var(--red);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--red);margin-bottom:1rem;display:none}
+.success-msg{background:var(--green-light);border:1px solid var(--green);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--green);margin-bottom:1rem;display:none}
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-logo">
+    <div class="auth-logo-icon">T</div>
+    <div><div class="auth-logo-text">Terry<span>Bot</span></div></div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-title">Reset your password 🔑</div>
+    <div class="auth-sub">Enter your email and we'll send you a link to reset your password.</div>
+    <div class="error-msg"   id="errorMsg"></div>
+    <div class="success-msg" id="successMsg"></div>
+    <div class="form-group">
+      <label class="form-label">Email address</label>
+      <input type="email" id="email" class="form-input" placeholder="dave@smithplumbing.co.uk"/>
+    </div>
+    <button class="btn-auth btn-navy" onclick="sendReset()">Send reset link →</button>
+    <button class="btn-auth btn-outline" onclick="window.location.href='login.html'">← Back to sign in</button>
+  </div>
+</div>
+<script>
+const sb = supabase.createClient(
+  'https://gavyzfmixpeddxqqdhzp.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhdnl6Zm1peHBlZGR4cXFkaHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDQ0MzYsImV4cCI6MjA5MTUyMDQzNn0.6SqiqqGeH-an2FYhqaVDh1J_CVerhzG8YqbbDePttPM'
+);
+async function sendReset() {
+  const email = document.getElementById('email').value.trim();
+  if (!email) { document.getElementById('errorMsg').textContent = 'Please enter your email'; document.getElementById('errorMsg').style.display='block'; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/reset-confirm.html'
+  });
+  if (error) {
+    document.getElementById('errorMsg').textContent = error.message;
+    document.getElementById('errorMsg').style.display = 'block';
+  } else {
+    document.getElementById('successMsg').textContent = 'Check your email! We\'ve sent you a reset link.';
+    document.getElementById('successMsg').style.display = 'block';
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>
