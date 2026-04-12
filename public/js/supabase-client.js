@@ -21,14 +21,13 @@ async function signOut() {
 }
 
 // ── CLEAR DEMO DATA ─────────────────────────────────────────
-// Called on login — wipes localStorage demo data so user starts fresh
+// Always wipe localStorage jobs/expenses — Supabase is the source of truth
 function clearDemoData() {
-  const cleared = localStorage.getItem('tb_demo_cleared');
-  if (!cleared) {
-    localStorage.removeItem('tb_jobs');
-    localStorage.removeItem('tb_expenses');
-    localStorage.setItem('tb_demo_cleared', '1');
-  }
+  localStorage.removeItem('tb_jobs');
+  localStorage.removeItem('tb_expenses');
+  localStorage.removeItem('tb_user');
+  localStorage.removeItem('tb_settings');
+  localStorage.removeItem('tb_demo_cleared');
 }
 
 // ── JOBS ────────────────────────────────────────────────────
