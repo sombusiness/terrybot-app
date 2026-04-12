@@ -142,12 +142,21 @@ async function initPage() {
   var params  = new URLSearchParams(window.location.search);
   var jobId   = params.get('id');
 
-  // Load from Supabase
+  // Load from Supabase - try with user_id first, then without
+  console.log('Looking for job_id:', jobId, 'user_id:', _userId);
   var jobRes = await _sb.from('jobs').select('*').eq('job_id', jobId).eq('user_id', _userId).single();
   var row    = jobRes.data;
 
+  // If not found with user_id, try without (for older records)
   if (!row) {
-    document.querySelector('.main').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div style="font-size:48px;margin-bottom:1rem">🔍</div><div style="font-size:18px;font-weight:800">Invoice not found</div></div>';
+    console.log('Not found with user_id, trying without...');
+    var jobRes2 = await _sb.from('jobs').select('*').eq('job_id', jobId).single();
+    row = jobRes2.data;
+  }
+
+  if (!row) {
+    console.error('Job not found:', jobId, jobRes.error);
+    document.querySelector('.main').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div style="font-size:48px;margin-bottom:1rem">🔍</div><div style="font-size:18px;font-weight:800">Invoice not found</div><div style="font-size:14px;margin-top:8px">ID: ' + jobId + '</div></div>';
     return;
   }
 
