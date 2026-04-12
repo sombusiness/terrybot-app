@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="theme-color" content="#1B2B4B"/>
 </head>
 <body>
@@ -19,7 +20,10 @@
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </div>
-  <div class="nav-back" onclick="window.location.href='index.html'">← Dashboard</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-back" onclick="window.location.href='dashboard.html'">← Dashboard</div>
+    <button onclick="signOut()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:Nunito,sans-serif">Sign out</button>
+  </div>
 </nav>
 
 <!-- TERRY TIP -->
@@ -154,6 +158,59 @@
 
 <script src="js/app.js"></script>
 <script>
+const _sb = supabase.createClient(
+  'https://gavyzfmixpeddxqqdhzp.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhdnl6Zm1peHBlZGR4cXFkaHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDQ0MzYsImV4cCI6MjA5MTUyMDQzNn0.6SqiqqGeH-an2FYhqaVDh1J_CVerhzG8YqbbDePttPM'
+);
+
+let _currentUser = null;
+
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.replace('login.html');
+}
+
+// Load user from Supabase
+async function loadSettings() {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { window.location.replace('login.html'); return; }
+  _currentUser = session.user;
+
+  // Try to get profile from Supabase
+  const { data: profile } = await _sb.from('profiles').select('*').eq('id', _currentUser.id).single();
+
+  // Fall back to metadata or localStorage
+  const meta = _currentUser.user_metadata || {};
+  const user = profile || {
+    name:          meta.name || TerryBot.getUser().name || '',
+    business_name: meta.business_name || TerryBot.getUser().businessName || '',
+    phone:         TerryBot.getUser().phone || '',
+    email:         _currentUser.email || '',
+    vat_registered: false,
+    vat_number:    '',
+    payment_terms: 14,
+    mileage_rate:  0.45,
+    personal_allowance: 12570
+  };
+
+  document.getElementById('settingName').value         = user.name || '';
+  document.getElementById('settingBusiness').value     = user.business_name || '';
+  document.getElementById('settingPhone').value        = user.phone || '';
+  document.getElementById('settingEmail').value        = _currentUser.email || '';
+  document.getElementById('settingVat').checked        = !!user.vat_registered;
+  document.getElementById('settingPaymentTerms').value = String(user.payment_terms || 14);
+  document.getElementById('settingMileage').value      = String(user.mileage_rate || 0.45);
+  document.getElementById('settingAllowance').value    = user.personal_allowance || 12570;
+
+  if (user.vat_registered && user.vat_number) {
+    document.getElementById('vatNumberRow').style.display = 'block';
+    document.getElementById('settingVatNumber').value = user.vat_number;
+  }
+
+  document.getElementById('terrySettingsMsg').textContent =
+    'Hi ' + (user.name || 'there') + '! Keep your details accurate so your invoices always look sharp and professional.';
+}
+
 TerryBot.initNav('settings');
 const user     = TerryBot.getUser();
 const settings = TerryBot.getSettings();

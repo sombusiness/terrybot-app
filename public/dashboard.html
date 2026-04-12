@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1B2B4B"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -21,7 +22,10 @@
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </div>
-  <div class="nav-date" id="navDate"></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="nav-date" id="navDate"></div>
+    <button onclick="signOut()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:12px;font-weight:800;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:Nunito,sans-serif">Sign out</button>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -158,6 +162,7 @@
   <div class="nav-item"><div class="nav-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/app.js"></script>
 <script>
 (function() {
@@ -227,6 +232,33 @@
   document.getElementById('taxExpenses').textContent  = '−' + TerryBot.formatCurrency(tax.totalExpenses);
   document.getElementById('taxTotal').textContent     = TerryBot.formatCurrency(tax.totalTax);
 })();
+</script>
+<script>
+const _sb = supabase.createClient(
+  'https://gavyzfmixpeddxqqdhzp.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdhdnl6Zm1peHBlZGR4cXFkaHpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NDQ0MzYsImV4cCI6MjA5MTUyMDQzNn0.6SqiqqGeH-an2FYhqaVDh1J_CVerhzG8YqbbDePttPM'
+);
+
+// Check user is logged in
+_sb.auth.getSession().then(({ data: { session } }) => {
+  if (!session) {
+    window.location.replace('login.html');
+    return;
+  }
+  // Update greeting with real user name
+  const user = session.user;
+  const metaName = user.user_metadata?.name || user.email?.split('@')[0] || 'Dave';
+  // Store in TerryBot so existing JS picks it up
+  const existingUser = TerryBot.getUser();
+  if (metaName && metaName !== 'Dave') {
+    TerryBot.setUser({...existingUser, name: metaName});
+  }
+});
+
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.replace('login.html');
+}
 </script>
 </body>
 </html>
