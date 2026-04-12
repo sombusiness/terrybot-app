@@ -182,9 +182,16 @@ async function initDashboard() {
 
   const profile = profileRes.data;
 
-  // Set real user data — overwrites any demo localStorage
-  const realName         = profile?.name || authUser.user_metadata?.name || authUser.email?.split('@')[0] || '';
-  const realBusinessName = profile?.business_name || authUser.user_metadata?.business_name || '';
+  // Debug - log what we got from Supabase
+  console.log('Profile from Supabase:', profile);
+  console.log('Auth user metadata:', authUser.user_metadata);
+
+  // Set real user data
+  const realName         = (profile?.name && profile.name.trim()) ? profile.name.trim()
+                         : (authUser.user_metadata?.name ? authUser.user_metadata.name
+                         : authUser.email?.split('@')[0] || '');
+  const realBusinessName = (profile?.business_name && profile.business_name.trim()) ? profile.business_name.trim()
+                         : (authUser.user_metadata?.business_name || '');
 
   TerryBot.setUser({
     name: realName, businessName: realBusinessName,
