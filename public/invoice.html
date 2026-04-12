@@ -275,7 +275,7 @@ function goToStep(n) {
   document.getElementById('sdot' + n).className = 'step-dot active';
   document.getElementById('sdot' + n).textContent = n;
   document.getElementById('stepLabel').textContent = stepLabels[n-1];
-  if (n === 3) buildPreview();
+  if (n === 3) buildPreview().catch(console.error);
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -357,11 +357,24 @@ function updateSubtotal() {
   }
 }
 
-function getNextInvoiceNumber() {
-  const jobs = TerryBot.getJobs();
-  let max = 0;
-  jobs.forEach(j => { const m = j.id && j.id.match(/TB-(\d+)/); if (m) max = Math.max(max, parseInt(m[1])); });
-  return 'TB-' + String(max + 1).padStart(3, '0');
+async function getNextInvoiceNumber() {
+  try {
+    var session = await _sb.auth.getSession();
+    var uid = session.data && session.data.session ? session.data.session.user.id : null;
+    if (uid) {
+      var res = await _sb.from('jobs').select('job_id').eq('user_id', uid);
+      if (res.data && res.data.length > 0) {
+        var max = 0;
+        res.data.forEach(function(j) {
+          var m = j.job_id && j.job_id.match(/TB-(\d+)/);
+          if (m) max = Math.max(max, parseInt(m[1]));
+        });
+        return 'TB-' + String(max + 1).padStart(3, '0');
+      }
+      return 'TB-001';
+    }
+  } catch(e) { console.error(e); }
+  return 'TB-' + String(Date.now()).slice(-4);
 }
 
 function escHtml(str) {
@@ -369,8 +382,19 @@ function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function buildPreview() {
-  const user  = TerryBot.getUser();
+async function buildPreview() {
+  // Get real user from Supabase
+  var sbUser = TerryBot.getUser();
+  try {
+    var sess = await _sb.auth.getSession();
+    if (sess.data && sess.data.session) {
+      var prof = await _sb.from('profiles').select('*').eq('id', sess.data.session.user.id).single();
+      if (prof.data) {
+        sbUser = { name: prof.data.name || sbUser.name, businessName: prof.data.business_name || sbUser.businessName, phone: prof.data.phone || sbUser.phone, email: sess.data.session.user.email || sbUser.email };
+      }
+    }
+  } catch(e) {}
+  const user  = sbUser;
   const name  = document.getElementById('custName').value.trim();
   const addr  = document.getElementById('custAddr').value.trim();
   const email = document.getElementById('custEmail').value.trim();
@@ -380,7 +404,7 @@ function buildPreview() {
   const vatToggle  = document.getElementById('vatToggle');
   const vatAmount  = (vatToggle && vatToggle.checked) ? subtotal * 0.20 : 0;
   const total      = subtotal + vatAmount;
-  const invoiceNum = getNextInvoiceNumber();
+  const invoiceNum = await getNextInvoiceNumber();
   const today      = new Date();
   const todayStr   = today.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
   const terms      = settings.paymentTerms || 14;
@@ -467,10 +491,19 @@ function shareWhatsApp() {
   window.open('https://wa.me/?text=' + msg, '_blank');
 }
 
-function downloadPDF() {
+async function downloadPDF() {
   if (!createdJob) { TerryBot.showToast('No invoice to download'); return; }
   const job  = createdJob;
-  const user = TerryBot.getUser();
+  var user = TerryBot.getUser();
+  try {
+    var sess = await _sb.auth.getSession();
+    if (sess.data && sess.data.session) {
+      var prof = await _sb.from('profiles').select('*').eq('id', sess.data.session.user.id).single();
+      if (prof.data) {
+        user = { name: prof.data.name || user.name, businessName: prof.data.business_name || user.businessName, phone: prof.data.phone || user.phone, email: sess.data.session.user.email || user.email };
+      }
+    }
+  } catch(e) {}
   const {jsPDF} = window.jspdf;
   const doc  = new jsPDF({unit:'mm', format:'a4'});
   const navy = [27,43,75], yellow = [245,197,24], white = [255,255,255];
