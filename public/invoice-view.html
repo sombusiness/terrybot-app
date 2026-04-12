@@ -113,42 +113,84 @@
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
 <script>
-TerryBot.initNav('jobs');
+var _userId = null;
+var _jobData = null;
 
-const params = new URLSearchParams(window.location.search);
-const jobId  = params.get('id');
-let job      = TerryBot.getJob(jobId);
-
-if (!job) {
-  // fallback to first job
-  job = TerryBot.getJobs()[0];
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.replace('login.html');
 }
 
-const user = TerryBot.getUser();
+async function initPage() {
+  var session = await requireAuth();
+  if (!session) return;
+  _userId = session.user.id;
 
-function buildPage() {
+  // Get real user profile
+  var profileRes = await _sb.from('profiles').select('*').eq('id', _userId).single();
+  var profile = profileRes.data || {};
+  var realUser = {
+    name:         profile.name         || session.user.user_metadata?.name || '',
+    businessName: profile.business_name || '',
+    phone:        profile.phone         || '',
+    email:        session.user.email    || ''
+  };
+
+  // Get job from URL param
+  var params  = new URLSearchParams(window.location.search);
+  var jobId   = params.get('id');
+
+  // Load from Supabase
+  var jobRes = await _sb.from('jobs').select('*').eq('job_id', jobId).eq('user_id', _userId).single();
+  var row    = jobRes.data;
+
+  if (!row) {
+    document.querySelector('.main').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted)"><div style="font-size:48px;margin-bottom:1rem">🔍</div><div style="font-size:18px;font-weight:800">Invoice not found</div></div>';
+    return;
+  }
+
+  // Map DB row to job object
+  var job = {
+    id:     row.job_id,
+    name:   row.name,
+    addr:   row.addr,
+    email:  row.email,
+    desc:   row.description,
+    date:   row.date,
+    due:    row.due,
+    amount: parseFloat(row.amount),
+    status: row.status,
+    lines:  row.lines || [],
+    notes:  row.notes || ''
+  };
+  _jobData = job;
+
+  buildPage(job, realUser);
+}
+
+function buildPage(job, user) {
   // Terry hero
-  const badge = document.getElementById('statusBadge');
-  const title = document.getElementById('heroTitle');
-  const msg   = document.getElementById('heroMsg');
-  const terry = document.getElementById('terryImg');
+  var badge = document.getElementById('statusBadge');
+  var title = document.getElementById('heroTitle');
+  var msg   = document.getElementById('heroMsg');
+  var terry = document.getElementById('terryImg');
 
   if (job.status === 'paid') {
-    badge.textContent = '✓ Paid';
+    badge.textContent = 'Paid';
     badge.className = 'terry-hero-badge paid';
     title.textContent = 'Payment received!';
-    msg.innerHTML = 'Lovely stuff! <strong>' + job.name + '</strong> has paid up. Here\'s the full invoice record.';
+    msg.innerHTML = 'Lovely stuff! <strong>' + job.name + '</strong> has paid up.';
     terry.src = 'images/terry-thumbs-up-v2.png';
   } else if (job.status === 'overdue') {
-    badge.textContent = '⚠ Overdue';
+    badge.textContent = 'Overdue';
     badge.className = 'terry-hero-badge overdue';
-    const daysOver = Math.max(0, Math.floor((new Date() - new Date(job.due.split(' ').reverse().join('-'))) / 86400000));
-    title.textContent = job.name + ' hasn\'t paid!';
-    msg.innerHTML = 'This is <strong>' + daysOver + ' days overdue.</strong> Send a friendly reminder — most people just forget!';
+    title.textContent = job.name + ' has not paid!';
+    msg.innerHTML = 'This invoice is <strong>overdue.</strong> Send a friendly reminder!';
     terry.src = 'images/terry-invoice-v2.png';
   } else {
-    badge.textContent = '⏳ Pending';
+    badge.textContent = 'Pending';
     badge.className = 'terry-hero-badge pending';
     title.textContent = 'Waiting on payment';
     msg.innerHTML = 'Invoice sent to <strong>' + job.name + '.</strong> Payment due ' + job.due + '.';
@@ -156,48 +198,49 @@ function buildPage() {
   }
 
   // Invoice details
-  document.getElementById('invNum').textContent = '#' + job.id;
+  document.getElementById('invNum').textContent  = '#' + job.id;
   document.getElementById('invDate').textContent = job.date;
-  document.getElementById('bizName').textContent = user.businessName || 'Dave Smith Plumbing';
-  document.getElementById('bizDetail').innerHTML = (user.phone || '07700 900123') + '<br/>' + (user.email || 'dave@smithplumbing.co.uk');
-  document.getElementById('custName').textContent = job.name;
-  document.getElementById('custDetail').innerHTML = job.addr + '<br/>' + job.email;
-  document.getElementById('invDue').textContent = 'Payment due: ' + job.due;
+
+  document.getElementById('bizName').textContent   = user.businessName || user.name;
+  document.getElementById('bizDetail').innerHTML   = (user.phone || '') + '<br/>' + (user.email || '');
+  document.getElementById('custName').textContent  = job.name;
+  document.getElementById('custDetail').innerHTML  = (job.addr || '').replace(/,/g, '<br/>') + '<br/>' + (job.email || '');
+  document.getElementById('invDue').textContent    = 'Payment due: ' + job.due;
 
   if (job.notes) {
-    const n = document.getElementById('invNotes');
+    var n = document.getElementById('invNotes');
     n.textContent = job.notes;
     n.style.display = 'block';
   }
 
   // Line items
-  const tbody = document.getElementById('lineItems');
-  let sub = 0;
-  (job.lines || []).forEach(line => {
+  var tbody = document.getElementById('lineItems');
+  var sub   = 0;
+  (job.lines || []).forEach(function(line) {
     sub += line.a;
-    const tr = document.createElement('tr');
+    var tr = document.createElement('tr');
     tr.innerHTML = '<td>' + line.d + '</td><td>£' + line.a.toFixed(2) + '</td>';
     tbody.appendChild(tr);
   });
   document.getElementById('subtotal').textContent = '£' + sub.toFixed(2);
   document.getElementById('totalAmt').textContent = '£' + sub.toFixed(2);
 
-  buildTimeline();
-  buildActions();
+  buildTimeline(job);
+  buildActions(job, user);
 }
 
-function buildTimeline() {
-  const steps = [
-    { label: 'Invoice created', sub: job.date, state: 'done' },
-    { label: 'Invoice sent to ' + job.name, sub: job.date, state: job.status !== 'draft' ? 'done' : 'todo' },
-    { label: 'Payment due', sub: job.due, state: job.status === 'paid' ? 'done' : job.status === 'overdue' ? 'current' : 'current' },
-    { label: 'Payment received', sub: job.status === 'paid' ? 'Confirmed ✓' : 'Waiting...', state: job.status === 'paid' ? 'done' : 'todo' }
+function buildTimeline(job) {
+  var steps = [
+    { label: 'Invoice created',           sub: job.date, state: 'done' },
+    { label: 'Invoice sent to ' + job.name, sub: job.date, state: 'done' },
+    { label: 'Payment due',               sub: job.due,  state: job.status === 'paid' ? 'done' : 'current' },
+    { label: 'Payment received',          sub: job.status === 'paid' ? 'Confirmed' : 'Waiting...', state: job.status === 'paid' ? 'done' : 'todo' }
   ];
-  const tl = document.getElementById('timeline');
-  tl.innerHTML = steps.map((step, i) => {
-    const isLast   = i === steps.length - 1;
-    const dotClass = step.state === 'done' ? 'dot-done' : step.state === 'current' ? 'dot-current' : 'dot-todo';
-    const connClass = step.state === 'done' ? 'done' : '';
+  var tl = document.getElementById('timeline');
+  tl.innerHTML = steps.map(function(step, i) {
+    var isLast   = i === steps.length - 1;
+    var dotClass = step.state === 'done' ? 'dot-done' : step.state === 'current' ? 'dot-current' : 'dot-todo';
+    var connClass = step.state === 'done' ? 'done' : '';
     return '<div class="timeline-item">' +
       '<div class="timeline-line-wrap">' +
         '<div class="timeline-dot ' + dotClass + '"></div>' +
@@ -211,102 +254,144 @@ function buildTimeline() {
   }).join('');
 }
 
-function buildActions() {
-  const sec = document.getElementById('actionSection');
-  const pdfBtn = '<div class="action-card" onclick="downloadPDF()"><div class="action-card-icon">📄</div><div class="action-card-label">Download PDF</div><div class="action-card-sub">Save a copy</div></div>';
-  const waBtn  = '<div class="action-card" onclick="shareWhatsApp()"><div class="action-card-icon">💬</div><div class="action-card-label">WhatsApp</div><div class="action-card-sub">Send to customer</div></div>';
-  const paidBtn = '<div class="action-card" onclick="openModal()"><div class="action-card-icon">✅</div><div class="action-card-label">Mark as paid</div><div class="action-card-sub">Cash in hand?</div></div>';
+function buildActions(job, user) {
+  var sec     = document.getElementById('actionSection');
+  var pdfBtn  = '<div class="action-card" onclick="downloadPDF()"><div class="action-card-icon">📄</div><div class="action-card-label">Download PDF</div></div>';
+  var paidBtn = '<div class="action-card" onclick="openModal()"><div class="action-card-icon">✅</div><div class="action-card-label">Mark as paid</div></div>';
 
   if (job.status === 'paid') {
-    sec.innerHTML = '<div class="action-grid">' + pdfBtn + waBtn + '</div>';
+    sec.innerHTML = '<div class="action-grid">' + pdfBtn + '</div>';
   } else if (job.status === 'overdue') {
-    sec.innerHTML =
-      '<button class="btn btn-navy btn-full" onclick="chasePayment()">📲 Send payment reminder</button>' +
-      '<div class="action-grid">' + pdfBtn + paidBtn + '</div>';
+    sec.innerHTML = '<button class="btn btn-navy btn-full" onclick="chasePayment()">📲 Send payment reminder</button><div class="action-grid">' + pdfBtn + paidBtn + '</div>';
   } else {
-    sec.innerHTML =
-      '<button class="btn btn-navy btn-full" onclick="shareWhatsApp()">💬 Send invoice via WhatsApp</button>' +
-      '<div class="action-grid">' + pdfBtn + paidBtn + '</div>';
+    sec.innerHTML = '<div class="action-grid">' + pdfBtn + paidBtn + '</div>';
   }
-  sec.innerHTML += '<button class="btn btn-outline btn-full" onclick="window.location.href=\'jobs.html\'">← Back to all jobs</button>';
-}
-
-function chasePayment() {
-  const msg = encodeURIComponent('Hi ' + job.name + ', this is a friendly reminder that invoice #' + job.id + ' for ' + TerryBot.formatCurrency(job.amount) + ' was due on ' + job.due + '. Please let me know if you have any questions. Many thanks!');
-  window.open('https://wa.me/?text=' + msg, '_blank');
-}
-
-function shareWhatsApp() {
-  const msg = encodeURIComponent('Hi ' + job.name + ', please find your invoice #' + job.id + ' for ' + TerryBot.formatCurrency(job.amount) + '. Payment due: ' + job.due + '. Thank you! — ' + user.businessName);
-  window.open('https://wa.me/?text=' + msg, '_blank');
+  sec.innerHTML += '<button class="btn btn-outline btn-full" onclick="window.location.href='jobs.html'">← Back to all jobs</button>';
 }
 
 function openModal()  { document.getElementById('paidModal').classList.add('open'); }
 function closeModal() { document.getElementById('paidModal').classList.remove('open'); }
 
-function confirmPaid() {
-  TerryBot.updateJob(job.id, { status: 'paid' });
-  job.status = 'paid';
+async function confirmPaid() {
+  if (!_jobData || !_userId) return;
   closeModal();
+
+  // Update in Supabase
+  var res = await _sb.from('jobs')
+    .update({ status: 'paid' })
+    .eq('job_id', _jobData.id)
+    .eq('user_id', _userId);
+
+  if (res.error) {
+    console.error('Mark paid error:', res.error);
+    TerryBot.showToast('Error updating - please try again');
+    return;
+  }
+
+  _jobData.status = 'paid';
   TerryBot.showToast('Marked as paid! 💰');
-  setTimeout(() => buildPage(), 400);
+  setTimeout(function() {
+    buildPage(_jobData, _currentUser);
+  }, 400);
 }
 
-function downloadPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  // Header
-  doc.setFillColor(27,43,75); doc.rect(0,0,210,38,'F');
-  doc.setTextColor(245,197,24); doc.setFontSize(20); doc.setFont('helvetica','bold');
-  doc.text('TerryBot',14,16);
-  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text('Trade invoices & tax made easy',14,24);
-  doc.setFontSize(16); doc.setFont('helvetica','bold');
-  doc.text('INVOICE #' + job.id, 210-14, 16, {align:'right'});
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text(job.date, 210-14, 24, {align:'right'});
-  // From / To
-  doc.setTextColor(27,43,75);
-  doc.setFontSize(10); doc.setFont('helvetica','bold');
-  doc.text('FROM',14,50); doc.text('BILL TO',110,50);
-  doc.setFont('helvetica','normal');
-  doc.text(user.businessName || 'Dave Smith Plumbing', 14, 58);
-  doc.text(user.phone || '07700 900123', 14, 65);
-  doc.text(user.email || 'dave@smithplumbing.co.uk', 14, 72);
-  doc.text(job.name, 110, 58);
-  const addrLines = job.addr.split(', ');
-  addrLines.forEach((line, i) => doc.text(line, 110, 65 + (i * 7)));
-  // Line items
-  let y = 88;
-  doc.setFillColor(249,250,251); doc.rect(14, y-6, 182, 10, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(107,114,128);
-  doc.text('DESCRIPTION', 16, y); doc.text('AMOUNT', 210-16, y, {align:'right'});
-  y += 8; doc.setTextColor(17,24,39); doc.setFont('helvetica','normal');
-  let sub = 0;
-  (job.lines || []).forEach(line => {
-    doc.line(14, y, 196, y);
-    doc.text(line.d, 16, y+7);
-    doc.text('£' + line.a.toFixed(2), 210-16, y+7, {align:'right'});
-    sub += line.a; y += 14;
+var _currentUser = {};
+
+async function downloadPDF() {
+  if (!_jobData) return;
+  var job  = _jobData;
+  var user = _currentUser;
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const navy=[27,43,75],yellow=[245,197,24],white=[255,255,255],gray=[244,246,250],muted=[107,114,128],text=[17,24,39];
+  const W=210,H=297,M=16;
+  doc.setFillColor(...navy);doc.rect(0,0,W,38,'F');
+  doc.setTextColor(...white);doc.setFont('helvetica','bold');doc.setFontSize(18);
+  doc.text('Terry',M,16);const tw=doc.getTextWidth('Terry');
+  doc.setTextColor(...yellow);doc.text('Bot',M+tw,16);
+  doc.setTextColor(200,210,230);doc.setFontSize(7);doc.setFont('helvetica','normal');
+  doc.text('Trade Invoices & Tax',M,22);
+  doc.setTextColor(...yellow);doc.setFont('helvetica','bold');doc.setFontSize(11);
+  doc.text(job.id,W-M,14,{align:'right'});
+  doc.setTextColor(200,210,230);doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Issued: '+job.date,W-M,20,{align:'right'});
+  doc.text('Due: '+job.due,W-M,26,{align:'right'});
+  let y=48;
+  doc.setFillColor(...gray);
+  doc.roundedRect(M,y,(W-M*2)/2-4,32,2,2,'F');
+  doc.roundedRect(M+(W-M*2)/2+4,y,(W-M*2)/2-4,32,2,2,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...muted);
+  doc.text('FROM',M+4,y+7);doc.text('BILL TO',M+(W-M*2)/2+8,y+7);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...text);
+  doc.text(user.businessName||user.name||'',M+4,y+14);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...muted);
+  doc.text(user.email||'',M+4,y+20);
+  if(user.phone)doc.text(user.phone,M+4,y+26);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...text);
+  doc.text(job.name||'',M+(W-M*2)/2+8,y+14);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...muted);
+  var addrLines=doc.splitTextToSize(job.addr||'',(W-M*2)/2-12);
+  addrLines.slice(0,2).forEach(function(line,i){doc.text(line,M+(W-M*2)/2+8,y+20+i*5);});
+  y+=40;
+  doc.setFillColor(...navy);doc.rect(M,y,W-M*2,9,'F');
+  doc.setTextColor(...white);doc.setFont('helvetica','bold');doc.setFontSize(8);
+  doc.text('DESCRIPTION',M+4,y+6);doc.text('AMOUNT',W-M-4,y+6,{align:'right'});
+  y+=9;
+  (job.lines||[]).forEach(function(line,i){
+    doc.setFillColor(...(i%2===0?white:gray));doc.rect(M,y,W-M*2,10,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...text);
+    doc.text((doc.splitTextToSize(line.d,W-M*2-50)[0]||''),M+4,y+6.5);
+    doc.setFont('helvetica','bold');doc.text('£'+line.a.toFixed(2),W-M-4,y+6.5,{align:'right'});
+    y+=10;
   });
-  y += 6;
-  doc.setTextColor(107,114,128); doc.text('Total due', 130, y);
-  doc.setTextColor(17,24,39); doc.setFont('helvetica','bold'); doc.setFontSize(12);
-  doc.text('£' + sub.toFixed(2), 210-16, y, {align:'right'});
-  y += 10;
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(107,114,128);
-  doc.text('Payment due: ' + job.due, 14, y);
-  if (job.notes) { y += 10; doc.text('Notes: ' + job.notes, 14, y, {maxWidth:182}); }
-  // Footer
-  doc.setFillColor(27,43,75); doc.rect(0,278,210,20,'F');
-  doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text('Generated by TerryBot — terrybot-app.vercel.app', 14, 290);
-  doc.text('Estimates only. Not financial advice.', 210-14, 290, {align:'right'});
-  doc.save('Invoice-' + job.id + '-' + job.name.replace(/\s+/g,'-') + '.pdf');
+  y+=4;
+  doc.setDrawColor(220,224,230);doc.line(M,y,W-M,y);y+=5;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...muted);
+  doc.text('Total due',W-M-50,y);
+  doc.setFont('helvetica','bold');doc.setTextColor(...text);
+  doc.text('£'+job.amount.toFixed(2),W-M-4,y,{align:'right'});y+=7;
+  doc.setFillColor(...navy);doc.roundedRect(W-M-72,y,72,12,2,2,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...white);
+  doc.text('TOTAL DUE',W-M-68,y+7.5);
+  doc.setTextColor(...yellow);doc.setFontSize(11);
+  doc.text('£'+job.amount.toFixed(2),W-M-4,y+8,{align:'right'});
+  y+=20;
+  if(job.notes){
+    doc.setFillColor(...gray);doc.roundedRect(M,y,W-M*2,16,2,2,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...muted);
+    doc.text('NOTES',M+4,y+6);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...text);
+    doc.text((doc.splitTextToSize(job.notes,W-M*2-8)[0]||''),M+4,y+12);y+=20;
+  }
+  doc.setFillColor(...navy);doc.rect(0,H-20,W,20,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...yellow);
+  doc.text('Generated by TerryBot',M,H-10);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(160,175,200);
+  doc.text('www.terrybot.co.uk',W-M,H-10,{align:'right'});
+  doc.save(job.id+'-'+job.name.replace(/\s+/g,'-')+'.pdf');
   TerryBot.showToast('PDF downloaded! 📄');
 }
 
-buildPage();
+function chasePayment() {
+  if (!_jobData) return;
+  var msg = encodeURIComponent('Hi ' + _jobData.name + ', this is a friendly reminder that invoice #' + _jobData.id + ' for £' + _jobData.amount.toFixed(2) + ' was due on ' + _jobData.due + '. Please let me know if you have any questions. Many thanks!');
+  window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+// Load real user before building page
+initPage().then(function() {
+  _sb.auth.getSession().then(function(res) {
+    if (res.data && res.data.session) {
+      _sb.from('profiles').select('*').eq('id', res.data.session.user.id).single().then(function(prof) {
+        _currentUser = {
+          name:         (prof.data && prof.data.name)          || '',
+          businessName: (prof.data && prof.data.business_name) || '',
+          phone:        (prof.data && prof.data.phone)         || '',
+          email:        res.data.session.user.email            || ''
+        };
+      });
+    }
+  });
+});
 </script>
 </body>
 </html>
