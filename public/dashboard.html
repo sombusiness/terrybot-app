@@ -229,12 +229,16 @@ async function initDashboard() {
     var rows = '';
     for (var i = 0; i < recentJobs.length; i++) {
       var job = recentJobs[i];
-      var dotClass = job.status === 'paid' ? 'dot-green' : job.status === 'overdue' ? 'dot-red' : 'dot-orange';
-      rows += '<div class="job-row" onclick="window.location.href='invoice-view.html?id=' + job.id + ''">';
-      rows += '<div class="job-dot ' + dotClass + '"></div>';
-      rows += '<div class="job-info"><div class="job-name">' + job.name + '</div><div class="job-desc">' + (job.desc || '') + ' · ' + job.date + '</div></div>';
-      rows += '<div style="text-align:right"><div class="job-amount">' + TerryBot.formatCurrency(job.amount) + '</div><span class="badge badge-' + job.status + '">' + job.status + '</span></div>';
-      rows += '</div>';
+      var dc = job.status === 'paid' ? 'dot-green' : job.status === 'overdue' ? 'dot-red' : 'dot-orange';
+      var el = document.createElement('div');
+      el.className = 'job-row';
+      el.setAttribute('onclick', "window.location.href='invoice-view.html?id=" + job.id + "'");
+      el.innerHTML = '<div class="job-dot ' + dc + '"></div>' +
+        '<div class="job-info"><div class="job-name">' + job.name + '</div>' +
+        '<div class="job-desc">' + (job.desc || '') + ' &middot; ' + job.date + '</div></div>' +
+        '<div style="text-align:right"><div class="job-amount">' + TerryBot.formatCurrency(job.amount) + '</div>' +
+        '<span class="badge badge-' + job.status + '">' + job.status + '</span></div>';
+      rows += el.outerHTML;
     }
     document.getElementById('recentJobsList').innerHTML = rows;
   }
