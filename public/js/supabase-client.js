@@ -32,22 +32,33 @@ function clearDemoData() {
 
 // ── JOBS ────────────────────────────────────────────────────
 async function dbSaveJob(job, userId) {
-  const { data, error } = await _sb.from('jobs').upsert({
+  // Check if job already exists first
+  const { data: existing } = await _sb.from('jobs')
+    .select('id').eq('job_id', job.id).eq('user_id', userId).single();
+
+  var payload = {
     user_id:     userId,
     job_id:      job.id,
     name:        job.name,
-    addr:        job.addr,
-    email:       job.email,
-    description: job.desc,
-    date:        job.date,
-    due:         job.due,
+    addr:        job.addr || '',
+    email:       job.email || '',
+    description: job.desc || '',
+    date:        job.date || '',
+    due:         job.due || '',
     amount:      job.amount,
-    status:      job.status,
-    lines:       job.lines,
+    status:      job.status || 'pending',
+    lines:       job.lines || [],
     notes:       job.notes || ''
-  }, { onConflict: 'job_id,user_id' });
-  if (error) console.error('Save job error:', error);
-  return data;
+  };
+
+  var result;
+  if (existing) {
+    result = await _sb.from('jobs').update(payload).eq('job_id', job.id).eq('user_id', userId);
+  } else {
+    result = await _sb.from('jobs').insert(payload);
+  }
+  if (result.error) console.error('Save job error:', result.error);
+  return result.data;
 }
 
 async function dbLoadJobs(userId) {
