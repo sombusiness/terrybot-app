@@ -214,9 +214,6 @@ async function initDashboard() {
   TerryBot.setJobs(jobs);
   TerryBot.setExpenses(expenses);
 
-  // Init nav
-  TerryBot.initNav('index');
-
   // Greeting
   const hour = new Date().getHours();
   const emoji = hour < 12 ? '☀️' : hour < 17 ? '👋' : '🌙';
@@ -285,6 +282,10 @@ async function initDashboard() {
   document.getElementById('taxTotal').textContent     = TerryBot.formatCurrency(tax.totalTax);
 }
 
+// Init nav immediately so bottom tabs always work
+TerryBot.initNav('index');
+
+// Then load data from Supabase
 initDashboard();
 </script>
 </body>
