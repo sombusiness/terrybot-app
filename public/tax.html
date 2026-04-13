@@ -244,6 +244,7 @@ async function initTax() {
     tip = "Keep logging paid invoices and expenses to get an accurate tax estimate!";
   }
   document.getElementById("terryTipText").innerHTML = tip;
+  } catch(e) { console.error("Tax error:", e); }
 }
 
 async function signOut() {
