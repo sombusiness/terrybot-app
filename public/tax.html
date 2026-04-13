@@ -174,6 +174,7 @@
 <script src="js/supabase-client.js"></script>
 <script>
 async function initTax() {
+  try {
   var session = await requireAuth();
   if (!session) return;
   var uid = session.user.id;
@@ -212,9 +213,9 @@ async function initTax() {
   document.getElementById("brkIncome").textContent   = TerryBot.formatCurrency(tax.totalIncome);
   document.getElementById("brkExpenses").textContent = "-" + TerryBot.formatCurrency(tax.totalExpenses);
   document.getElementById("brkPersonal").textContent = "-" + TerryBot.formatCurrency(personalAllowance);
-  document.getElementById("brkTaxable").textContent  = TerryBot.formatCurrency(taxableIncome);
+  document.getElementById("brkTaxable").textContent  = TerryBot.formatCurrency(tax.taxableProfit || 0);
   document.getElementById("brkIncomeTax").textContent = TerryBot.formatCurrency(tax.incomeTax || 0);
-  document.getElementById("brkNI").textContent       = TerryBot.formatCurrency(tax.ni || 0);
+  document.getElementById("brkNI").textContent       = TerryBot.formatCurrency(tax.nationalInsurance || 0);
   document.getElementById("brkTotal").textContent    = TerryBot.formatCurrency(tax.totalTax);
 
   // Expense category bars
