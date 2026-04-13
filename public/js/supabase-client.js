@@ -118,3 +118,58 @@ async function dbLoadExpenses(userId) {
     date:   row.date
   }));
 }
+
+// ── PRO CHECK ────────────────────────────────────────────────
+async function checkIsPro(userId) {
+  var res = await _sb.from('profiles').select('is_pro').eq('id', userId).single();
+  return !!(res.data && res.data.is_pro);
+}
+
+// ── PAYWALL ──────────────────────────────────────────────────
+function showPaywall(message) {
+  // Remove existing modal if any
+  var existing = document.getElementById('paywallModal');
+  if (existing) existing.remove();
+
+  var modal = document.createElement('div');
+  modal.id = 'paywallModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding:1rem';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:24px 24px 20px 20px;width:100%;max-width:480px;overflow:hidden;animation:slideUp 0.3s ease">
+      <div style="background:linear-gradient(135deg,#1B2B4B,#2d4a7a);padding:2rem;text-align:center;position:relative">
+        <div style="font-size:48px;margin-bottom:0.5rem">🔨</div>
+        <div style="color:#F5C518;font-size:22px;font-weight:900;margin-bottom:6px">Upgrade to TerryBot Pro</div>
+        <div style="color:rgba(255,255,255,0.8);font-size:14px;font-weight:600">${message || 'You have reached your free limit'}</div>
+      </div>
+      <div style="padding:1.5rem">
+        <div style="background:#F9FAFB;border-radius:14px;padding:1rem;margin-bottom:1rem">
+          <div style="font-size:13px;font-weight:800;color:#1B2B4B;margin-bottom:8px">Pro includes everything:</div>
+          <div style="font-size:13px;font-weight:600;color:#374151;line-height:2">
+            ✅ Unlimited invoices<br>
+            ✅ Unlimited expenses<br>
+            ✅ Cloud sync across all devices<br>
+            ✅ PDF downloads<br>
+            ✅ Tax estimates<br>
+            ✅ Priority support
+          </div>
+        </div>
+        <a href="https://buy.stripe.com/5kQeV6gowcDceMxbQq3wQ01" style="display:block;background:#F5C518;color:#1B2B4B;font-size:16px;font-weight:900;padding:16px;border-radius:14px;text-align:center;text-decoration:none;margin-bottom:10px">
+          🏆 Get Pro — £49.99/year (best value)
+        </a>
+        <a href="https://buy.stripe.com/00wcMYa08av447T1bM3wQ00" style="display:block;background:#1B2B4B;color:white;font-size:14px;font-weight:800;padding:14px;border-radius:14px;text-align:center;text-decoration:none;margin-bottom:10px">
+          Monthly — £6.99/month
+        </a>
+        <button onclick="document.getElementById('paywallModal').remove()" style="width:100%;background:none;border:none;color:#9CA3AF;font-size:13px;font-weight:700;padding:8px;cursor:pointer">
+          Maybe later
+        </button>
+      </div>
+    </div>
+    <style>@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}</style>
+  `;
+  document.body.appendChild(modal);
+
+  // Close on backdrop click
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) modal.remove();
+  });
+}
