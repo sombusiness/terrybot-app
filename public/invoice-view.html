@@ -194,11 +194,11 @@ function render() {
   (job.lines || []).forEach(function(line) {
     sub += line.a;
     var tr = document.createElement("tr");
-    tr.innerHTML = "<td>" + line.d + "</td><td>&#xA3;" + line.a.toFixed(2) + "</td>";
+    tr.innerHTML = "<td>" + line.d + "</td><td>£" + line.a.toFixed(2) + "</td>";
     tbody.appendChild(tr);
   });
-  document.getElementById("subtotal").textContent = "&#xA3;" + sub.toFixed(2);
-  document.getElementById("totalAmt").textContent = "&#xA3;" + sub.toFixed(2);
+  document.getElementById("subtotal").textContent = "£" + sub.toFixed(2);
+  document.getElementById("totalAmt").textContent = "£" + sub.toFixed(2);
 
   var steps = [
     { label: "Invoice created", sub: job.date, done: true },
