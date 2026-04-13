@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="theme-color" content="#1B2B4B"/>
 </head>
 <body>
@@ -67,6 +68,7 @@
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
 <script>
 // Mark user as pro subscriber so they go straight to dashboard
 try {
@@ -75,6 +77,22 @@ try {
   user.proSince = new Date().toISOString();
   TerryBot.setUser(user);
 } catch(e) {}
+</script>
+<script>
+// Mark user as Pro after successful payment
+async function markAsPro() {
+  try {
+    var session = await _sb.auth.getSession();
+    if (session.data && session.data.session) {
+      var uid = session.data.session.user.id;
+      await _sb.from('profiles').upsert({ id: uid, is_pro: true });
+      console.log('User marked as Pro!');
+    }
+  } catch(e) {
+    console.error('Error marking as pro:', e);
+  }
+}
+markAsPro();
 </script>
 </body>
 </html>

@@ -113,7 +113,7 @@
         <input type="tel" id="custPhone" class="form-input" placeholder="e.g. 07700 900456"/>
       </div>
     </div>
-    <button class="btn btn-navy btn-full" onclick="goToStep(2)">Next — Job details →</button>
+    <button class="btn btn-navy btn-full" onclick="checkCanCreateInvoice().then(function(ok){if(ok)goToStep(2)})">Next — Job details →</button>
   </div>
 
   <!-- STEP 2: LINE ITEMS -->
@@ -244,6 +244,22 @@ if (settings.defaultNotes) document.getElementById('invoiceNotes').value = setti
 addLineItem(); addLineItem();
 
 const stepLabels = ['1 of 4 — Customer details','2 of 4 — Job details','3 of 4 — Preview','4 of 4 — Done!'];
+
+async function checkCanCreateInvoice() {
+  try {
+    var sess = await _sb.auth.getSession();
+    if (!sess.data || !sess.data.session) return true;
+    var uid = sess.data.session.user.id;
+    var isPro = await checkIsPro(uid);
+    if (isPro) return true;
+    var jobs = await dbLoadJobs(uid);
+    if (jobs.length >= 1) {
+      showPaywall('Free accounts are limited to 1 invoice. Upgrade to Pro for unlimited invoices!');
+      return false;
+    }
+    return true;
+  } catch(e) { return true; }
+}
 
 function goToStep(n) {
   if (n > currentStep) {

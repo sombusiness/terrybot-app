@@ -283,7 +283,25 @@ function handleFileSelect(input) {
   preview.classList.add('show');
 }
 
-function saveExpense() {
+async function checkCanAddExpense() {
+  try {
+    var sess = await _sb.auth.getSession();
+    if (!sess.data || !sess.data.session) return true;
+    var uid = sess.data.session.user.id;
+    var isPro = await checkIsPro(uid);
+    if (isPro) return true;
+    var expenses = await dbLoadExpenses(uid);
+    if (expenses.length >= 1) {
+      showPaywall('Free accounts are limited to 1 expense. Upgrade to Pro for unlimited expense tracking!');
+      return false;
+    }
+    return true;
+  } catch(e) { return true; }
+}
+
+async function saveExpense() {
+  var canAdd = await checkCanAddExpense();
+  if (!canAdd) return;
   const isSnap = activeTab === 'snap';
   const desc   = document.getElementById(isSnap ? 'snapDesc' : 'typeDesc').value.trim();
   const amount = parseFloat(document.getElementById(isSnap ? 'snapAmount' : 'typeAmount').value);
