@@ -126,6 +126,41 @@
 
   <button class="btn btn-navy btn-full" id="saveBtn" onclick="saveSettings()">Save settings ✓</button>
 
+  <!-- PRO STATUS -->
+  <div class="settings-section" id="proSection" style="display:none">
+    <div class="settings-section-title">Subscription</div>
+    <div class="settings-row">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--navy)">TerryBot Pro ✅</div>
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">Your subscription is active</div>
+        </div>
+        <span style="background:#D1FAE5;color:#065F46;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px">ACTIVE</span>
+      </div>
+    </div>
+    <div class="settings-row">
+      <button onclick="cancelSubscription()" class="btn btn-danger btn-full">Cancel subscription</button>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-top:8px">You keep Pro access until the end of your billing period</div>
+    </div>
+  </div>
+
+  <!-- FREE STATUS -->
+  <div class="settings-section" id="freeSection" style="display:none">
+    <div class="settings-section-title">Subscription</div>
+    <div class="settings-row">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--navy)">Free account</div>
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">Limited to 1 invoice and 1 expense</div>
+        </div>
+        <span style="background:#FEF3C7;color:#92400E;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px">FREE</span>
+      </div>
+    </div>
+    <div class="settings-row">
+      <a href="pricing.html" class="btn btn-navy btn-full" style="text-align:center;text-decoration:none;display:block">Upgrade to Pro 🔨</a>
+    </div>
+  </div>
+
   <div class="app-version">TerryBot v1.0.0 — Built for UK tradesmen 🔨<br/>
     <a href="privacy.html" style="color:var(--muted);font-size:11px">Privacy Policy</a> ·
     <a href="terms.html" style="color:var(--muted);font-size:11px">Terms &amp; Conditions</a>
@@ -174,6 +209,17 @@ async function init() {
   const name = profile?.name || meta.name || 'there';
   document.getElementById('terrySettingsMsg').textContent =
     'Hi ' + name + '! Keep your details accurate so your invoices always look sharp and professional.';
+
+  // Show pro or free status section
+  var isPro = await checkIsPro(_currentUser.id);
+  console.log("isPro:", isPro);
+  if (isPro) {
+    document.getElementById('proSection').style.display = 'block';
+    document.getElementById('freeSection').style.display = 'none';
+  } else {
+    document.getElementById('proSection').style.display = 'none';
+    document.getElementById('freeSection').style.display = 'block';
+  }
 }
 
 async function saveSettings() {
@@ -235,6 +281,20 @@ async function saveSettings() {
 async function signOut() {
   await _sb.auth.signOut();
   window.location.replace('login.html');
+}
+
+async function cancelSubscription() {
+  if (!confirm('Are you sure you want to cancel? You will keep Pro access until the end of your current billing period.')) return;
+  // Redirect to Stripe customer portal
+  var session = await _sb.auth.getSession();
+  if (!session.data || !session.data.session) return;
+  var profile = await _sb.from('profiles').select('stripe_customer_id').eq('id', session.data.session.user.id).single();
+  if (profile.data && profile.data.stripe_customer_id) {
+    // Open Stripe billing portal
+    window.open('https://billing.stripe.com/p/login/00wcMYa08av447T1bM3wQ00', '_blank');
+  } else {
+    alert('No active subscription found. Please contact support@terrybot.co.uk');
+  }
 }
 
 init();
