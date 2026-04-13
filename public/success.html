@@ -79,15 +79,20 @@ try {
 } catch(e) {}
 </script>
 <script>
-// Mark user as Pro after successful payment
 async function markAsPro() {
   try {
     var session = await _sb.auth.getSession();
-    if (session.data && session.data.session) {
-      var uid = session.data.session.user.id;
-      await _sb.from('profiles').upsert({ id: uid, is_pro: true });
-      console.log('User marked as Pro!');
-    }
+    if (!session.data || !session.data.session) return;
+    var uid = session.data.session.user.id;
+
+    // Mark as pro — stripe_customer_id will be set by webhook
+    // But also store email so webhook can find the user
+    await _sb.from('profiles').upsert({
+      id: uid,
+      is_pro: true,
+      email: session.data.session.user.email
+    });
+    console.log('User marked as Pro!');
   } catch(e) {
     console.error('Error marking as pro:', e);
   }

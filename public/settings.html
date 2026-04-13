@@ -285,16 +285,8 @@ async function signOut() {
 
 async function cancelSubscription() {
   if (!confirm('Are you sure you want to cancel? You will keep Pro access until the end of your current billing period.')) return;
-  // Redirect to Stripe customer portal
-  var session = await _sb.auth.getSession();
-  if (!session.data || !session.data.session) return;
-  var profile = await _sb.from('profiles').select('stripe_customer_id').eq('id', session.data.session.user.id).single();
-  if (profile.data && profile.data.stripe_customer_id) {
-    // Open Stripe billing portal
-    window.open('https://billing.stripe.com/p/login/00wcMYa08av447T1bM3wQ00', '_blank');
-  } else {
-    alert('No active subscription found. Please contact support@terrybot.co.uk');
-  }
+  // Open Stripe customer portal — customer logs in with their email
+  window.open('https://billing.stripe.com/p/login/00wcMYa08av447T1bM3wQ00', '_blank');
 }
 
 init();
