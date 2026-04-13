@@ -171,87 +171,86 @@
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
 <script>
-TerryBot.initNav('tax');
-const tax      = TerryBot.calcTax();
-const progress = TerryBot.getTaxYearProgress();
-const yearLabel = TerryBot.getTaxYearLabel();
+async function initTax() {
+  var session = await requireAuth();
+  if (!session) return;
+  var uid = session.user.id;
+  clearDemoData();
 
-document.getElementById('yearLabel').textContent  = yearLabel;
-document.getElementById('yearLabel2').textContent = yearLabel;
-document.getElementById('totalTaxAmount').textContent = TerryBot.formatCurrency(tax.totalTax);
-document.getElementById('progressFill').style.width = progress + '%';
-document.getElementById('progressPct').textContent = progress + '%';
+  // Load real data from Supabase
+  var jobs     = await dbLoadJobs(uid);
+  var expenses = await dbLoadExpenses(uid);
+  var profRes  = await _sb.from("profiles").select("*").eq("id", uid).single();
+  var profile  = profRes.data || {};
 
-document.getElementById('brkIncome').textContent    = TerryBot.formatCurrency(tax.totalIncome);
-document.getElementById('brkExpenses').textContent  = '−' + TerryBot.formatCurrency(tax.totalExpenses);
-document.getElementById('brkMileage').textContent   = '−' + TerryBot.formatCurrency(tax.mileageClaimed);
-document.getElementById('brkPersonal').textContent  = '−' + TerryBot.formatCurrency(tax.personalAllowance);
-document.getElementById('brkTaxable').textContent   = TerryBot.formatCurrency(tax.taxableProfit);
-document.getElementById('brkIncomeTax').textContent = TerryBot.formatCurrency(tax.incomeTax);
-document.getElementById('brkNI').textContent        = TerryBot.formatCurrency(tax.nationalInsurance);
-document.getElementById('brkTotal').textContent     = TerryBot.formatCurrency(tax.totalTax);
+  // Set into TerryBot so calcTax works correctly
+  TerryBot.setJobs(jobs);
+  TerryBot.setExpenses(expenses);
+  TerryBot.setSettings({
+    currency: "£", taxRate: 20,
+    personalAllowance: profile.personal_allowance || 12570,
+    paymentTerms:      profile.payment_terms      || 14,
+    mileageRate:       profile.mileage_rate        || 0.45,
+    defaultNotes: ""
+  });
 
-// Terry tip
-const perMonth = Math.round(tax.totalTax / 9);
-let tip = '';
-if (tax.totalTax === 0) {
-  tip = 'Nothing to pay yet — keep logging those expenses and invoices. Terry\'s keeping track!';
-} else {
-  tip = 'Your bill is <strong>' + TerryBot.formatCurrency(tax.totalTax) + '</strong>. Set aside <strong>' + TerryBot.formatCurrency(perMonth) + '/month</strong> and you\'ll be sorted when January comes round!';
-}
-document.getElementById('terryTipText').innerHTML = tip;
+  var tax      = TerryBot.calcTax();
+  var progress = TerryBot.getTaxYearProgress();
+  var yearLabel = TerryBot.getTaxYearLabel();
 
-// Cat bars
-function buildCatBars() {
-  const expenses = TerryBot.getExpenses();
-  const grouped  = {};
-  expenses.forEach(e => { grouped[e.cat] = (grouped[e.cat] || 0) + e.amount; });
-  const sorted = Object.entries(grouped).sort((a,b) => b[1]-a[1]);
-  const maxVal = sorted.length ? sorted[0][1] : 1;
-  const container = document.getElementById('catBars');
-  if (!sorted.length) {
-    container.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:14px;font-weight:600;padding:20px">No expenses logged yet.</div>';
-    return;
+  document.getElementById("yearLabel").textContent    = yearLabel;
+  document.getElementById("yearLabel2").textContent   = yearLabel;
+  document.getElementById("totalTaxAmount").textContent = TerryBot.formatCurrency(tax.totalTax);
+  document.getElementById("progressFill").style.width = progress + "%";
+  document.getElementById("progressPct").textContent  = progress + "% of tax year complete";
+
+  var personalAllowance = profile.personal_allowance || 12570;
+  var taxableIncome = Math.max(0, tax.totalIncome - tax.totalExpenses - personalAllowance);
+
+  document.getElementById("brkIncome").textContent   = TerryBot.formatCurrency(tax.totalIncome);
+  document.getElementById("brkExpenses").textContent = "-" + TerryBot.formatCurrency(tax.totalExpenses);
+  document.getElementById("brkPersonal").textContent = "-" + TerryBot.formatCurrency(personalAllowance);
+  document.getElementById("brkTaxable").textContent  = TerryBot.formatCurrency(taxableIncome);
+  document.getElementById("brkIncomeTax").textContent = TerryBot.formatCurrency(tax.incomeTax || 0);
+  document.getElementById("brkNI").textContent       = TerryBot.formatCurrency(tax.ni || 0);
+  document.getElementById("brkTotal").textContent    = TerryBot.formatCurrency(tax.totalTax);
+
+  // Expense category bars
+  var expByCategory = {};
+  expenses.forEach(function(e) { expByCategory[e.cat] = (expByCategory[e.cat] || 0) + e.amount; });
+  var totalExp = tax.totalExpenses || 1;
+  var catHtml = "";
+  Object.keys(expByCategory).forEach(function(cat) {
+    var pct = Math.round((expByCategory[cat] / totalExp) * 100);
+    catHtml += "<div style='margin-bottom:10px'>" +
+      "<div style='display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px'>" +
+      "<span>" + cat + "</span><span>" + TerryBot.formatCurrency(expByCategory[cat]) + "</span></div>" +
+      "<div style='background:#E5E7EB;border-radius:999px;height:6px'>" +
+      "<div style='background:var(--green);height:6px;border-radius:999px;width:" + pct + "%'></div></div></div>";
+  });
+  var catEl = document.getElementById("catBars");
+  if (catEl) catEl.innerHTML = catHtml || "<div style='color:var(--muted);font-size:13px;padding:8px 0'>No expenses logged yet</div>";
+
+  // Terry tip
+  var tip = "";
+  if (tax.totalTax > 0) {
+    var monthsLeft = Math.max(1, Math.round((1 - progress/100) * 12));
+    var monthly = Math.ceil(tax.totalTax / monthsLeft);
+    tip = "Set aside <strong>" + TerryBot.formatCurrency(monthly) + "/month</strong> for your tax bill. Your estimated liability is <strong>" + TerryBot.formatCurrency(tax.totalTax) + "</strong>.";
+  } else {
+    tip = "Keep logging paid invoices and expenses to get an accurate tax estimate!";
   }
-  container.innerHTML = sorted.map(([cat, total]) => {
-    const icon  = TerryBot.getCategoryIcon(cat);
-    const color = TerryBot.getCategoryColor(cat);
-    const pct   = Math.round((total / maxVal) * 100);
-    return '<div class="cat-bar-row">' +
-      '<div class="cat-bar-icon" style="background:' + color + '">' + icon + '</div>' +
-      '<div class="cat-bar-name">' + cat + '</div>' +
-      '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:' + pct + '%"></div></div>' +
-      '<div class="cat-bar-amount">' + TerryBot.formatCurrency(total) + '</div>' +
-    '</div>';
-  }).join('');
+  document.getElementById("terryTipText").innerHTML = tip;
 }
 
-// HMRC Checklist
-function buildChecklist(tax) {
-  const items = [
-    { done: tax.totalIncome > 0,     title: 'Log all paid invoices', sub: 'All income must be declared to HMRC' },
-    { done: tax.totalExpenses > 0,   title: 'Log business expenses', sub: 'Reduces your taxable profit' },
-    { done: tax.mileageClaimed > 0,  title: 'Log business mileage', sub: '£0.45/mile for first 10,000 miles' },
-    { done: false,                   warn: true, title: 'Register for Self Assessment', sub: 'Required if you earn over £1,000 self-employed' },
-    { done: false,                   title: 'File tax return by 31 Jan 2026', sub: 'Online submission deadline' },
-    { done: tax.totalTax > 0,        title: 'Set aside tax pot', sub: TerryBot.formatCurrency(tax.totalTax) + ' estimated due' },
-  ];
-  document.getElementById('checklist').innerHTML = items.map(item => {
-    const cls   = item.done ? 'check-done' : item.warn ? 'check-warn' : 'check-todo';
-    const icon  = item.done ? '✓' : item.warn ? '!' : '○';
-    return '<div class="check-row">' +
-      '<div class="check-icon ' + cls + '">' + icon + '</div>' +
-      '<div>' +
-        '<div class="check-title">' + item.title + '</div>' +
-        '<div class="check-sub">' + item.sub + '</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.replace("login.html");
 }
 
-buildCatBars();
-buildChecklist(tax);
+initTax();
 </script>
 </body>
 </html>
