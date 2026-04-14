@@ -230,6 +230,10 @@ requireAuth().then(session => {
       mileageRate: profile.mileage_rate || 0.45,
       defaultNotes: ''
     });
+    // Pre-fill default invoice notes if set
+    if (profile.default_notes) {
+      document.getElementById('invoiceNotes').value = profile.default_notes;
+    }
     if (profile.vat_registered) document.getElementById('vatToggleWrap').style.display = 'block';
     if (profile.payment_terms) {
       const s = TerryBot.getSettings();

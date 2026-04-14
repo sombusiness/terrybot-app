@@ -198,6 +198,7 @@ async function init() {
   document.getElementById('settingEmail').value        = _currentUser.email        || '';
   document.getElementById('settingVat').checked        = !!profile?.vat_registered;
   document.getElementById('settingPaymentTerms').value = String(profile?.payment_terms    || 14);
+  if (profile?.default_notes) document.getElementById('settingInvoiceNotes').value = profile.default_notes;
   document.getElementById('settingMileage').value      = String(profile?.mileage_rate     || 0.45);
   document.getElementById('settingAllowance').value    = profile?.personal_allowance      || 12570;
 
@@ -238,12 +239,14 @@ async function saveSettings() {
   btn.textContent = 'Saving...';
   btn.disabled = true;
 
+  const default_notes = document.getElementById('settingInvoiceNotes').value.trim();
   const { error } = await _sb.from('profiles').upsert({
     id: _currentUser.id,
     name, business_name, phone,
     email: _currentUser.email,
     vat_registered, vat_number,
-    payment_terms, mileage_rate, personal_allowance
+    payment_terms, mileage_rate, personal_allowance,
+    default_notes
   });
 
   if (error) {
