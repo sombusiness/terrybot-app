@@ -177,6 +177,13 @@ async function initDashboard() {
   var expenses   = await dbLoadExpenses(authUser.id);
   var profile    = profileRes.data;
 
+  // Redirect to onboarding if first time user
+  if (!profile || !profile.onboarded) {
+    window.location.replace('onboarding.html');
+    return;
+  }
+
+
   var realName = '';
   if (profile && profile.name && profile.name.trim()) {
     realName = profile.name.trim();

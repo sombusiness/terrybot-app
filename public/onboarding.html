@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Welcome to TerryBot!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta name="theme-color" content="#1B2B4B"/>
+<style>
+body { background: var(--navy); min-height: 100vh; display: flex; flex-direction: column; }
+.onboard-wrap { flex: 1; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; width: 100%; padding: 1.5rem; }
+
+/* STEP INDICATORS */
+.steps { display: flex; gap: 8px; justify-content: center; margin-bottom: 2rem; margin-top: 1rem; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); transition: all 0.3s; }
+.step-dot.active { background: var(--yellow); width: 24px; border-radius: 4px; }
+.step-dot.done { background: rgba(255,255,255,0.6); }
+
+/* SCREENS */
+.screen { display: none; flex-direction: column; flex: 1; }
+.screen.active { display: flex; }
+
+/* WELCOME SCREEN */
+.welcome-hero { text-align: center; padding: 1rem 0 2rem; }
+.welcome-robot { font-size: 80px; margin-bottom: 1rem; }
+.welcome-title { color: white; font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+.welcome-title span { color: var(--yellow); }
+.welcome-sub { color: rgba(255,255,255,0.7); font-size: 15px; font-weight: 600; line-height: 1.6; }
+
+.free-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; }
+.free-card-title { color: var(--yellow); font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.free-item { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.free-item:last-child { margin-bottom: 0; }
+
+.pro-card { background: linear-gradient(135deg, rgba(245,197,24,0.15), rgba(245,197,24,0.05)); border: 1px solid rgba(245,197,24,0.3); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; }
+.pro-card-title { color: var(--yellow); font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.pro-item { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.pro-item:last-child { margin-bottom: 0; }
+.pro-badge { background: var(--yellow); color: var(--navy); font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 999px; }
+
+/* DETAILS SCREEN */
+.details-card { background: white; border-radius: 20px; padding: 1.75rem; flex: 1; }
+.details-title { font-size: 22px; font-weight: 900; color: var(--navy); margin-bottom: 6px; }
+.details-sub { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+.form-group { margin-bottom: 1.25rem; }
+.form-label { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 6px; display: block; }
+.form-label span { color: var(--red); }
+.form-input { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: Nunito, sans-serif; color: var(--text); outline: none; font-weight: 600; }
+.form-input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,43,75,0.08); }
+.form-input.error { border-color: var(--red); }
+.error-text { color: var(--red); font-size: 12px; font-weight: 700; margin-top: 4px; display: none; }
+.required-note { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 1.25rem; }
+
+/* COLOUR SCREEN */
+.colour-card { background: white; border-radius: 20px; padding: 1.75rem; }
+.colour-title { font-size: 22px; font-weight: 900; color: var(--navy); margin-bottom: 6px; }
+.colour-sub { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
+.colour-picker-wrap { display: flex; align-items: center; gap: 16px; margin-bottom: 1.5rem; }
+.colour-preview { width: 64px; height: 64px; border-radius: 14px; border: 3px solid rgba(0,0,0,0.1); flex-shrink: 0; transition: background 0.2s; }
+.colour-input { width: 80px; height: 44px; border: none; border-radius: 10px; cursor: pointer; padding: 0; background: none; }
+.colour-presets { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.colour-preset { width: 100%; aspect-ratio: 1; border-radius: 10px; border: 3px solid transparent; cursor: pointer; transition: all 0.15s; }
+.colour-preset.selected { border-color: var(--navy); transform: scale(1.1); }
+.invoice-preview { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+.inv-prev-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.inv-prev-logo { font-size: 16px; font-weight: 900; color: white; }
+.inv-prev-num { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); }
+.inv-prev-body { background: #F9FAFB; padding: 12px 16px; }
+.inv-prev-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text); padding: 4px 0; border-bottom: 1px solid var(--border); }
+.inv-prev-total { display: flex; justify-content: space-between; font-size: 13px; font-weight: 900; color: white; padding: 10px 16px; }
+
+/* BUTTONS */
+.btn-next { width: 100%; padding: 16px; border: none; border-radius: 14px; background: var(--yellow); color: var(--navy); font-size: 16px; font-weight: 900; font-family: Nunito, sans-serif; cursor: pointer; margin-top: auto; transition: all 0.15s; }
+.btn-next:hover { background: #e8b800; }
+.btn-next:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-skip { width: 100%; padding: 10px; border: none; background: none; color: rgba(255,255,255,0.5); font-size: 13px; font-weight: 700; font-family: Nunito, sans-serif; cursor: pointer; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="onboard-wrap">
+
+  <!-- STEP DOTS -->
+  <div class="steps">
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+  </div>
+
+  <!-- SCREEN 1: WELCOME -->
+  <div class="screen active" id="screen0">
+    <div class="welcome-hero">
+      <div class="welcome-robot">🤖</div>
+      <div class="welcome-title">Welcome to <span>TerryBot!</span></div>
+      <div class="welcome-sub">Trade invoices &amp; tax made easy.<br/>Let's get you set up in 60 seconds.</div>
+    </div>
+
+    <div class="free-card">
+      <div class="free-card-title">✅ Your free account includes</div>
+      <div class="free-item">📋 2 invoices — create &amp; download PDF</div>
+      <div class="free-item">💰 2 expenses — track your receipts</div>
+      <div class="free-item">📊 Tax estimates — know what you owe</div>
+      <div class="free-item">☁️ Cloud sync — access anywhere</div>
+    </div>
+
+    <div class="pro-card">
+      <div class="pro-card-title">🔨 Upgrade to Pro <span class="pro-badge">£6.99/mo</span></div>
+      <div class="pro-item">📋 Unlimited invoices &amp; expenses</div>
+      <div class="pro-item">🖼️ Add your own business logo to invoices</div>
+      <div class="pro-item">⚡ Priority support</div>
+    </div>
+
+    <button class="btn-next" onclick="goToScreen(1)">Let's get started →</button>
+  </div>
+
+  <!-- SCREEN 2: BUSINESS DETAILS -->
+  <div class="screen" id="screen1">
+    <div class="details-card">
+      <div class="details-title">Your business details 🔨</div>
+      <div class="details-sub">These appear on every invoice you create. Fill them in once and they're saved forever.</div>
+      <div class="required-note">* Required fields</div>
+
+      <div class="form-group">
+        <label class="form-label">Your name <span>*</span></label>
+        <input type="text" id="onboardName" class="form-input" placeholder="e.g. Dave Smith"/>
+        <div class="error-text" id="nameError">Please enter your name</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Business name <span>*</span></label>
+        <input type="text" id="onboardBusiness" class="form-input" placeholder="e.g. Dave Smith Plumbing"/>
+        <div class="error-text" id="businessError">Please enter your business name</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone number <span>*</span></label>
+        <input type="tel" id="onboardPhone" class="form-input" placeholder="e.g. 07700 900123"/>
+        <div class="error-text" id="phoneError">Please enter your phone number</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Business email</label>
+        <input type="email" id="onboardEmail" class="form-input" placeholder="e.g. dave@smithplumbing.co.uk"/>
+      </div>
+
+      <button class="btn-next" onclick="saveDetails()">Save &amp; continue →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: BRAND COLOUR -->
+  <div class="screen" id="screen2">
+    <div class="colour-card">
+      <div class="colour-title">Pick your brand colour 🎨</div>
+      <div class="colour-sub">This colour will appear on your invoice header and PDF. You can change it anytime in Settings.</div>
+
+      <div class="colour-picker-wrap">
+        <div class="colour-preview" id="colourPreview" style="background:#1B2B4B"></div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:6px">Custom colour</div>
+          <input type="color" class="colour-input" id="colourPicker" value="#1B2B4B" oninput="updateColour(this.value)"/>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--muted)">Selected</div>
+          <div style="font-size:16px;font-weight:900;color:var(--text)" id="colourHex">#1B2B4B</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px">Presets</div>
+      <div class="colour-presets">
+        <div class="colour-preset selected" style="background:#1B2B4B" onclick="selectPreset('#1B2B4B',this)" title="TerryBot Navy"></div>
+        <div class="colour-preset" style="background:#1a1a2e" onclick="selectPreset('#1a1a2e',this)" title="Midnight"></div>
+        <div class="colour-preset" style="background:#16213e" onclick="selectPreset('#16213e',this)" title="Dark Blue"></div>
+        <div class="colour-preset" style="background:#0f3460" onclick="selectPreset('#0f3460',this)" title="Royal Blue"></div>
+        <div class="colour-preset" style="background:#1B4332" onclick="selectPreset('#1B4332',this)" title="Forest Green"></div>
+        <div class="colour-preset" style="background:#6B2737" onclick="selectPreset('#6B2737',this)" title="Burgundy"></div>
+        <div class="colour-preset" style="background:#2D3748" onclick="selectPreset('#2D3748',this)" title="Slate"></div>
+        <div class="colour-preset" style="background:#744210" onclick="selectPreset('#744210',this)" title="Amber"></div>
+        <div class="colour-preset" style="background:#1a365d" onclick="selectPreset('#1a365d',this)" title="Navy"></div>
+        <div class="colour-preset" style="background:#553C9A" onclick="selectPreset('#553C9A',this)" title="Purple"></div>
+        <div class="colour-preset" style="background:#2C7A7B" onclick="selectPreset('#2C7A7B',this)" title="Teal"></div>
+        <div class="colour-preset" style="background:#C05621" onclick="selectPreset('#C05621',this)" title="Orange"></div>
+      </div>
+
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px">Invoice preview</div>
+      <div class="invoice-preview">
+        <div class="inv-prev-header" id="prevHeader" style="background:#1B2B4B">
+          <div class="inv-prev-logo">TerryBot</div>
+          <div class="inv-prev-num">Invoice #TB-001</div>
+        </div>
+        <div class="inv-prev-body">
+          <div class="inv-prev-row"><span>Labour — fix boiler</span><span>£150.00</span></div>
+          <div class="inv-prev-row"><span>Parts</span><span>£45.00</span></div>
+        </div>
+        <div class="inv-prev-total" id="prevTotal" style="background:#1B2B4B">
+          <span>Total due</span><span>£195.00</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-next" onclick="finish()" id="finishBtn">Let's go! 🔨</button>
+    <button class="btn-skip" onclick="finish()">Skip — use default colour</button>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
+<script>
+var _currentUser = null;
+var _selectedColour = '#1B2B4B';
+
+// Auth check
+async function initOnboard() {
+  var session = await requireAuth();
+  if (!session) return;
+  _currentUser = session.user;
+
+  // Pre-fill name and email from auth
+  var meta = session.user.user_metadata || {};
+  if (meta.name) document.getElementById('onboardName').value = meta.name;
+  document.getElementById('onboardEmail').value = session.user.email || '';
+}
+
+function goToScreen(n) {
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('screen' + n).classList.add('active');
+
+  // Update dots
+  for (var i = 0; i < 3; i++) {
+    var dot = document.getElementById('dot' + i);
+    dot.classList.remove('active', 'done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+
+  // Scroll to top
+  window.scrollTo(0, 0);
+}
+
+async function saveDetails() {
+  var name     = document.getElementById('onboardName').value.trim();
+  var business = document.getElementById('onboardBusiness').value.trim();
+  var phone    = document.getElementById('onboardPhone').value.trim();
+  var email    = document.getElementById('onboardEmail').value.trim() || (_currentUser && _currentUser.email) || '';
+
+  // Validate
+  var valid = true;
+  if (!name) {
+    document.getElementById('onboardName').classList.add('error');
+    document.getElementById('nameError').style.display = 'block';
+    valid = false;
+  } else {
+    document.getElementById('onboardName').classList.remove('error');
+    document.getElementById('nameError').style.display = 'none';
+  }
+  if (!business) {
+    document.getElementById('onboardBusiness').classList.add('error');
+    document.getElementById('businessError').style.display = 'block';
+    valid = false;
+  } else {
+    document.getElementById('onboardBusiness').classList.remove('error');
+    document.getElementById('businessError').style.display = 'none';
+  }
+  if (!phone) {
+    document.getElementById('onboardPhone').classList.add('error');
+    document.getElementById('phoneError').style.display = 'block';
+    valid = false;
+  } else {
+    document.getElementById('onboardPhone').classList.remove('error');
+    document.getElementById('phoneError').style.display = 'none';
+  }
+  if (!valid) return;
+
+  // Save to Supabase
+  if (_currentUser) {
+    await _sb.from('profiles').upsert({
+      id: _currentUser.id,
+      name: name,
+      business_name: business,
+      phone: phone,
+      email: email,
+      onboarded: true
+    });
+  }
+
+  // Also save to localStorage
+  TerryBot.setUser({ name: name, businessName: business, phone: phone, email: email });
+
+  goToScreen(2);
+}
+
+function updateColour(hex) {
+  _selectedColour = hex;
+  document.getElementById('colourPreview').style.background = hex;
+  document.getElementById('colourHex').textContent = hex.toUpperCase();
+  document.getElementById('prevHeader').style.background = hex;
+  document.getElementById('prevTotal').style.background = hex;
+  // Deselect all presets
+  document.querySelectorAll('.colour-preset').forEach(function(p) { p.classList.remove('selected'); });
+}
+
+function selectPreset(hex, el) {
+  document.getElementById('colourPicker').value = hex;
+  updateColour(hex);
+  document.querySelectorAll('.colour-preset').forEach(function(p) { p.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+async function finish() {
+  // Save brand colour
+  if (_currentUser) {
+    await _sb.from('profiles').upsert({
+      id: _currentUser.id,
+      brand_colour: _selectedColour,
+      onboarded: true
+    });
+  }
+  TerryBot.setSettings({
+    currency: '£', taxRate: 20,
+    personalAllowance: 12570,
+    paymentTerms: 14,
+    mileageRate: 0.45,
+    defaultNotes: '',
+    brandColour: _selectedColour
+  });
+  window.location.replace('dashboard.html');
+}
+
+initOnboard();
+</script>
+</body>
+</html>
