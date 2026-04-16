@@ -102,7 +102,12 @@
           <div class="upload-text">Tap to take photo or choose file</div>
           <div class="upload-sub">JPG, PNG or PDF</div>
         </div>
-        <input type="file" id="receiptInput" accept="image/*,application/pdf" capture="environment" onchange="handleFileSelect(this)"/>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="button" onclick="document.getElementById('cameraInput').click()" class="btn btn-outline" style="flex:1;font-size:13px;padding:10px">📷 Take photo</button>
+          <button type="button" onclick="document.getElementById('receiptInput').click()" class="btn btn-outline" style="flex:1;font-size:13px;padding:10px">🖼️ Choose file</button>
+        </div>
+        <input type="file" id="receiptInput" accept="image/*,application/pdf" onchange="handleFileSelect(this)" style="display:none"/>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleFileSelect(this)" style="display:none"/>
         <div class="upload-preview" id="uploadPreview">
           <img id="previewImg" alt="Receipt preview"/>
           <div class="upload-preview-name" id="previewName"></div>
@@ -271,7 +276,7 @@ function updateClaimDisplay(prefix) {
 }
 
 function handleFileSelect(input) {
-  const file = input.files[0]; if (!file) return;
+  const file = input.files && input.files[0]; if (!file) return;
   const preview = document.getElementById('uploadPreview');
   const img = document.getElementById('previewImg');
   document.getElementById('previewName').textContent = file.name;
@@ -291,8 +296,8 @@ async function checkCanAddExpense() {
     var isPro = await checkIsPro(uid);
     if (isPro) return true;
     var expenses = await dbLoadExpenses(uid);
-    if (expenses.length >= 1) {
-      showPaywall('Free accounts are limited to 1 expense. Upgrade to Pro for unlimited expense tracking!');
+    if (expenses.length >= 2) {
+      showPaywall('Free accounts are limited to 2 expenses. Upgrade to Pro for unlimited expense tracking!');
       return false;
     }
     return true;
