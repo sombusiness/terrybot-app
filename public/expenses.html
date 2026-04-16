@@ -44,7 +44,7 @@
 <body>
 
 <nav>
-  <div class="nav-left" onclick="window.location.href='index.html'">
+  <div class="nav-left" onclick="window.location.href='dashboard.html'">
     <div class="nav-logo">T</div>
     <div>
       <div class="nav-brand">Terry<span>Bot</span></div>
@@ -210,9 +210,13 @@ let _userId = null;
 const today = new Date().toISOString().split('T')[0];
 
 // Auth check and load real expenses
+var _expensesInitialised = false;
+
 async function initExpenses() {
+  if (_expensesInitialised) return;  // Prevent double-init when camera closes
   const session = await requireAuth();
   if (!session) return;
+  _expensesInitialised = true;
   _userId = session.user.id;
   clearDemoData();
   // Load expenses from Supabase
@@ -221,6 +225,12 @@ async function initExpenses() {
   buildSummary();
   buildExpenseList();
 }
+
+// Use pageshow instead of just running initExpenses
+// persisted=true means it came from bfcache (e.g. camera return) - don't reinit
+window.addEventListener('pageshow', function(e) {
+  if (!e.persisted) initExpenses();
+});
 initExpenses();
 document.getElementById('snapDate').value = today;
 document.getElementById('typeDate').value = today;
