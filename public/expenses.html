@@ -97,17 +97,13 @@
     <div class="form-card">
       <div class="form-group">
         <label class="form-label">Photo or upload</label>
-        <div class="upload-zone" onclick="document.getElementById('receiptInput').click()">
-          <div class="upload-icon">📄</div>
-          <div class="upload-text">Tap to take photo or choose file</div>
-          <div class="upload-sub">JPG, PNG or PDF</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <label for="cameraInput" class="btn btn-outline" style="flex:1;font-size:13px;padding:12px;text-align:center;cursor:pointer;border-radius:12px;display:block">📷 Take photo</label>
+          <label for="galleryInput" class="btn btn-outline" style="flex:1;font-size:13px;padding:12px;text-align:center;cursor:pointer;border-radius:12px;display:block">🖼️ Choose file</label>
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button type="button" onclick="document.getElementById('cameraInput').click()" class="btn btn-outline" style="flex:1;font-size:13px;padding:10px">📷 Take photo</button>
-          <button type="button" onclick="document.getElementById('receiptInput').click()" class="btn btn-outline" style="flex:1;font-size:13px;padding:10px">🖼️ Choose file</button>
-        </div>
-        <input type="file" id="receiptInput" accept="image/*,application/pdf" onchange="handleFileSelect(this)" style="display:none"/>
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleFileSelect(this)" style="display:none"/>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleFileSelect(this)"/>
+        <input type="file" id="galleryInput" accept="image/*,application/pdf" style="display:none" onchange="handleFileSelect(this)"/>
+        <input type="file" id="receiptInput" accept="image/*,application/pdf" style="display:none" onchange="handleFileSelect(this)"/>
         <div class="upload-preview" id="uploadPreview">
           <img id="previewImg" alt="Receipt preview"/>
           <div class="upload-preview-name" id="previewName"></div>
