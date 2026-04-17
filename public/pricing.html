@@ -86,11 +86,13 @@
       <div class="plan-amount">£0 <span style="font-size:16px">/mo</span></div>
     </div>
     <div style="margin-top:1rem;display:flex;flex-direction:column;gap:8px">
-      <div class="feature-row"><div class="feature-tick">✓</div>1 invoice</div>
-      <div class="feature-row"><div class="feature-tick">✓</div>1 expense log</div>
-      <div class="feature-row"><div class="feature-cross">×</div><span style="color:var(--muted)">PDF downloads</span></div>
-      <div class="feature-row"><div class="feature-cross">×</div><span style="color:var(--muted)">Unlimited invoices</span></div>
-      <div class="feature-row"><div class="feature-cross">×</div><span style="color:var(--muted)">Tax summary</span></div>
+      <div class="feature-row"><div class="feature-tick">✓</div>2 invoices (PDF included)</div>
+      <div class="feature-row"><div class="feature-tick">✓</div>2 expense logs</div>
+      <div class="feature-row"><div class="feature-tick">✓</div>Tax estimates</div>
+      <div class="feature-row"><div class="feature-tick">✓</div>Cloud sync</div>
+      <div class="feature-row"><div class="feature-cross">×</div><span style="color:var(--muted)">Unlimited invoices &amp; expenses</span></div>
+      <div class="feature-row"><div class="feature-cross">×</div><span style="color:var(--muted)">Custom business logo on invoices</span></div>
+      <div class="feature-row"><div class="feature-cross">×</div><span style="color:var(--muted)">Custom invoice colour</span></div>
     </div>
   </div>
 
@@ -112,9 +114,10 @@
       <div class="feature-row"><div class="feature-tick">✓</div>PDF downloads</div>
       <div class="feature-row"><div class="feature-tick">✓</div>Tax summary &amp; HMRC checklist</div>
       <div class="feature-row"><div class="feature-tick">✓</div>WhatsApp invoice sharing</div>
-      <div class="feature-row"><div class="feature-tick">✓</div>Receipt photo upload</div>
+      <div class="feature-row"><div class="feature-tick">✓</div>Custom business logo on invoices</div>
+      <div class="feature-row"><div class="feature-tick">✓</div>Custom invoice brand colour</div>
       <div class="feature-row"><div class="feature-tick">✓</div>Business profile &amp; settings</div>
-      <div class="feature-row"><div class="feature-tick">✓</div>Works offline (PWA)</div>
+      <div class="feature-row"><div class="feature-tick">✓</div>Cloud sync across all devices</div>
     </div>
   </div>
 
@@ -252,7 +255,7 @@ const faqs = [
   { q:'Is my data safe?', a:'Yes. All payments are handled by Stripe — we never see your card details. Your invoice and expense data is stored securely.' },
   { q:'Does TerryBot replace my accountant?', a:'TerryBot handles the day-to-day stuff — invoices, expenses, and tax estimates. For complex situations or if you earn over £50k, we still recommend speaking to an accountant.' },
   { q:'Can I switch from monthly to annual?', a:'Yes. Upgrade any time and we\'ll prorate the difference. Downgrading takes effect at the end of your annual period.' },
-  { q:'Why is the free tier so limited?', a:'The free tier lets you try TerryBot and send your first invoice before committing. We limit it to keep the service fast and reliable for paying members.' },
+  { q:'Why is the free tier so limited?', a:'The free tier lets you try TerryBot and send your first invoice before committing. We limit it to 2 invoices and 2 expenses so you can try the full experience before committing.' },
   { q:'What payment methods do you accept?', a:'All major credit and debit cards via Stripe — Visa, Mastercard, Amex. Apple Pay and Google Pay are also supported on compatible devices.' },
   { q:'Do I get a receipt?', a:'Yes — Stripe automatically emails you a receipt after every payment. You can also download invoices from your Stripe billing portal.' }
 ];
