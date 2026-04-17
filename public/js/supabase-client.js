@@ -9,9 +9,13 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── AUTH HELPERS ────────────────────────────────────────────
+var _cachedSession = null;
+
 async function requireAuth() {
+  if (_cachedSession) return _cachedSession;
   const { data: { session } } = await _sb.auth.getSession();
   if (!session) { window.location.replace('login.html'); return null; }
+  _cachedSession = session;
   return session;
 }
 
