@@ -213,24 +213,28 @@ const today = new Date().toISOString().split('T')[0];
 var _expensesInitialised = false;
 
 async function initExpenses() {
-  if (_expensesInitialised) return;  // Prevent double-init when camera closes
+  if (_expensesInitialised) return;
   const session = await requireAuth();
   if (!session) return;
   _expensesInitialised = true;
   _userId = session.user.id;
   clearDemoData();
-  // Load expenses from Supabase
   const expenses = await dbLoadExpenses(_userId);
   TerryBot.setExpenses(expenses);
   buildSummary();
   buildExpenseList();
 }
 
-// Use pageshow instead of just running initExpenses
-// persisted=true means it came from bfcache (e.g. camera return) - don't reinit
-window.addEventListener('pageshow', function(e) {
-  if (!e.persisted) initExpenses();
+// When camera closes, Android fires visibilitychange/focus events
+// Prevent these from triggering any navigation
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && _expensesInitialised) {
+    // Page came back into view (e.g. from camera) — do nothing, just rebuild UI
+    buildSummary();
+    buildExpenseList();
+  }
 });
+
 initExpenses();
 document.getElementById('snapDate').value = today;
 document.getElementById('typeDate').value = today;
