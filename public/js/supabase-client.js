@@ -12,14 +12,36 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 var _cachedSession = null;
 
 async function requireAuth() {
+  // Use in-memory cache first (fastest)
   if (_cachedSession) return _cachedSession;
+
+  // Check sessionStorage for session after page reloads (e.g. Android camera)
+  var stored = sessionStorage.getItem('tb_session_user_id');
+  if (stored) {
+    // We had a valid session before reload - get it from Supabase without redirecting
+    const { data: { session } } = await _sb.auth.getSession();
+    if (session) {
+      _cachedSession = session;
+      return session;
+    }
+    // Session expired - clear storage and redirect
+    sessionStorage.removeItem('tb_session_user_id');
+    window.location.replace('login.html');
+    return null;
+  }
+
+  // No cached session - do full auth check
   const { data: { session } } = await _sb.auth.getSession();
   if (!session) { window.location.replace('login.html'); return null; }
   _cachedSession = session;
+  // Store user ID in sessionStorage so page reloads (e.g. camera) don't redirect
+  sessionStorage.setItem('tb_session_user_id', session.user.id);
   return session;
 }
 
 async function signOut() {
+  sessionStorage.removeItem('tb_session_user_id');
+  _cachedSession = null;
   await _sb.auth.signOut();
   window.location.replace('login.html');
 }
