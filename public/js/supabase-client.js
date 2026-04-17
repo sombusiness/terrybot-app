@@ -12,35 +12,38 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 var _cachedSession = null;
 
 async function requireAuth() {
-  // Use in-memory cache first (fastest)
+  // Use in-memory cache first
   if (_cachedSession) return _cachedSession;
 
-  // Check sessionStorage for session after page reloads (e.g. Android camera)
-  var stored = sessionStorage.getItem('tb_session_user_id');
-  if (stored) {
-    // We had a valid session before reload - get it from Supabase without redirecting
-    const { data: { session } } = await _sb.auth.getSession();
-    if (session) {
-      _cachedSession = session;
-      return session;
-    }
-    // Session expired - clear storage and redirect
-    sessionStorage.removeItem('tb_session_user_id');
-    window.location.replace('login.html');
-    return null;
+  // Try Supabase session first
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session) {
+    _cachedSession = session;
+    // Save flag so camera-killed pages know user was logged in
+    localStorage.setItem('tb_was_logged_in', '1');
+    return session;
   }
 
-  // No cached session - do full auth check
-  const { data: { session } } = await _sb.auth.getSession();
-  if (!session) { window.location.replace('login.html'); return null; }
-  _cachedSession = session;
-  // Store user ID in sessionStorage so page reloads (e.g. camera) don't redirect
-  sessionStorage.setItem('tb_session_user_id', session.user.id);
-  return session;
+  // No Supabase session - check if page was killed by Android (e.g. camera)
+  // If user was logged in before, wait briefly and retry once
+  var wasLoggedIn = localStorage.getItem('tb_was_logged_in');
+  if (wasLoggedIn) {
+    await new Promise(function(r) { setTimeout(r, 1500); });
+    const { data: { session: retrySession } } = await _sb.auth.getSession();
+    if (retrySession) {
+      _cachedSession = retrySession;
+      return retrySession;
+    }
+  }
+
+  // Genuinely not logged in
+  localStorage.removeItem('tb_was_logged_in');
+  window.location.replace('login.html');
+  return null;
 }
 
 async function signOut() {
-  sessionStorage.removeItem('tb_session_user_id');
+  localStorage.removeItem('tb_was_logged_in');
   _cachedSession = null;
   await _sb.auth.signOut();
   window.location.replace('login.html');
