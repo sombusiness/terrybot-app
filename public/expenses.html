@@ -206,13 +206,14 @@ let _userId = null;
 const today = new Date().toISOString().split('T')[0];
 
 // Auth check and load real expenses
-var _expensesInitialised = false;
-
 async function initExpenses() {
-  if (_expensesInitialised) return;
-  const session = await requireAuth();
-  if (!session) return;
-  _expensesInitialised = true;
+  // Check if we already have a valid session cached in supabase-client
+  // Use getSession with no redirect - if no session, THEN redirect
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) {
+    window.location.replace('login.html');
+    return;
+  }
   _userId = session.user.id;
   clearDemoData();
   const expenses = await dbLoadExpenses(_userId);
@@ -221,16 +222,12 @@ async function initExpenses() {
   buildExpenseList();
 }
 
-// When camera closes, Android fires visibilitychange/focus events
-// Prevent these from triggering any navigation
-document.addEventListener('visibilitychange', function() {
-  if (document.visibilityState === 'visible' && _expensesInitialised) {
-    // Page came back into view (e.g. from camera) — do nothing, just rebuild UI
-    buildSummary();
-    buildExpenseList();
-  }
-});
+// On Android, camera can cause full page reload
+// Use sessionStorage to detect if we were already on this page
+var _cameraReturn = sessionStorage.getItem('tb_on_expenses');
+sessionStorage.setItem('tb_on_expenses', '1');
 
+// Always init - but if camera caused reload, just rebuild without clearing data
 initExpenses();
 document.getElementById('snapDate').value = today;
 document.getElementById('typeDate').value = today;
