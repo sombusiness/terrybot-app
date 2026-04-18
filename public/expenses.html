@@ -10,19 +10,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="theme-color" content="#1B2B4B"/>
 <style>
-.summary-bar{background:var(--navy);border-radius:14px;padding:1rem 1.25rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.25rem}
-.summary-item{text-align:center}
-.summary-label{font-size:10px;font-weight:800;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px}
-.summary-value{font-size:18px;font-weight:900;color:white}
-.summary-value.yellow{color:var(--yellow)}
-.tab-row{display:grid;grid-template-columns:1fr 1fr;margin-bottom:1.25rem;background:white;border-radius:14px;border:1.5px solid var(--border);overflow:hidden}
-.tab-btn{padding:12px;text-align:center;font-size:14px;font-weight:800;color:var(--muted);cursor:pointer;border:none;background:white;font-family:'Nunito',sans-serif;transition:all 0.15s}
-.tab-btn.active{background:var(--navy);color:white}
-.category-btn{padding:10px 8px;border-radius:10px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:800;color:var(--text);cursor:pointer;text-align:center;transition:all 0.15s;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;gap:4px}
-.category-btn.selected{border-color:var(--navy);background:var(--navy);color:white}
-.category-icon{font-size:20px}
-.category-label{font-size:11px;font-weight:800}
-.claim-display{background:var(--yellow-light);border:1.5px solid var(--yellow);border-radius:10px;padding:0.75rem;text-align:center;margin-top:10px;display:none}
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.cat-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border:2px solid var(--border);border-radius:12px;background:white;cursor:pointer;transition:all 0.15s;font-family:Nunito,sans-serif}
+.cat-btn:hover{border-color:var(--navy);background:#F8FAFF}
+.cat-btn.selected{border-color:var(--navy);background:var(--navy);color:white}
+.cat-btn.selected .cat-label{color:white}
+.cat-icon{font-size:22px}
+.cat-label{font-size:11px;font-weight:800;color:var(--text);text-align:center}
+.claim-display{display:none;background:var(--navy-light, #F0F4FF);border-radius:10px;padding:10px 14px;margin-top:8px;text-align:center}
 .claim-display.show{display:block}
 .claim-label{font-size:11px;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
 .claim-amount{font-size:26px;font-weight:900;color:var(--navy)}
@@ -33,10 +28,6 @@
 .expense-desc{font-size:14px;font-weight:800;color:var(--text)}
 .expense-cat{font-size:12px;font-weight:600;color:var(--muted)}
 .expense-amount{font-size:14px;font-weight:900;color:var(--red)}
-.upload-preview{display:none;margin-top:10px}
-.upload-preview.show{display:block}
-.upload-preview img{width:100%;max-height:180px;object-fit:contain;border-radius:8px;border:1px solid var(--border)}
-.upload-preview-name{font-size:12px;font-weight:700;color:var(--muted);margin-top:6px;text-align:center}
 .success-screen{text-align:center;padding:2rem 0}
 .success-terry{width:180px;height:200px;object-fit:contain;margin:0 auto 1rem;display:block}
 </style>
@@ -82,7 +73,7 @@
     </div>
     <div class="terry-tip-bubble">
       <div class="terry-tip-title">Terry says...</div>
-      <p class="terry-tip-text">Every receipt you save <strong>reduces your tax bill</strong>. Don't skip this bit!</p>
+      <p class="terry-tip-text">Every expense you log <strong>reduces your tax bill</strong>. Don't skip this bit!</p>
     </div>
   </div>
 
@@ -90,36 +81,228 @@
   <div style="background:linear-gradient(135deg,#1B2B4B,#2d4a7a);border-radius:16px;padding:1.1rem 1.25rem;display:flex;align-items:center;gap:12px;margin-bottom:1rem">
     <div style="font-size:28px">💰</div>
     <div>
-      <div style="color:white;font-size:14px;font-weight:900">Log your expenses &amp; receipts</div>
-      <div style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;margin-top:2px">Every expense logged = less tax to pay. Materials, fuel, tools and more.</div>
+      <div style="color:white;font-size:14px;font-weight:900">Log your expenses &amp; costs</div>
+      <div style="color:rgba(255,255,255,0.7);font-size:12px;font-weight:600;margin-top:2px">Materials, fuel, tools, mileage — it all adds up and reduces what you owe HMRC.</div>
     </div>
   </div>
 
-  <!-- SNAP TAB -->
-  <div id="snapPanel">
+  <!-- EXPENSE FORM -->
+  <div id="expenseForm">
     <div class="form-card">
       <div class="form-group">
         <label class="form-label">What was this for? <span style="color:var(--red)">*</span></label>
-        <input type="text" id="snapDesc" class="form-input" placeholder="e.g. Copper pipe fittings from Screwfix"/>
+        <input type="text" id="expDesc" class="form-input" placeholder="e.g. Copper pipe fittings from Screwfix"/>
       </div>
       <div class="form-group">
         <label class="form-label">Amount (£) <span style="color:var(--red)">*</span></label>
-        <input type="number" id="snapAmount" class="form-input" placeholder="0.00" step="0.01" min="0" oninput="updateClaimDisplay('snap')"/>
-        <div class="claim-display" id="snapClaimDisplay">
+        <input type="number" id="expAmount" class="form-input" placeholder="0.00" step="0.01" min="0" oninput="updateClaimDisplay()"/>
+        <div class="claim-display" id="claimDisplay">
           <div class="claim-label">You're claiming</div>
-          <div class="claim-amount" id="snapClaimAmount">£0.00</div>
+          <div class="claim-amount" id="claimAmount">£0.00</div>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Category <span style="color:var(--red)">*</span></label>
-        <div class="cat-grid" id="snapCategoryGrid"></div>
+        <div class="cat-grid" id="categoryGrid"></div>
       </div>
       <div class="form-group">
         <label class="form-label">Date</label>
-        <input type="date" id="snapDate" class="form-input"/>
+        <input type="date" id="expDate" class="form-input"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes <span style="font-size:11px;color:var(--muted);font-weight:600">(optional)</span></label>
+        <input type="text" id="expNotes" class="form-input" placeholder="e.g. Job for Mike's kitchen, ref INV-003"/>
       </div>
       <button class="btn btn-navy btn-full" onclick="saveExpense()">Save this expense ✓</button>
     </div>
   </div>
 
-  
+  <!-- RECENT EXPENSES -->
+  <div class="section-title" style="margin-top:1.5rem">
+    Recent expenses
+  </div>
+  <div class="jobs-card" id="expenseList">
+    <div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:14px;font-weight:600">No expenses logged yet</div>
+  </div>
+
+</div>
+
+<!-- SUCCESS SCREEN -->
+<div class="hidden" id="successScreen">
+  <div class="success-screen">
+    <img src="images/terry-thumbs-up-v2.png" class="success-terry" alt="Terry"/>
+    <h2 style="font-size:22px;font-weight:900;color:var(--navy);margin-bottom:8px">Expense logged! 💰</h2>
+    <p style="font-size:15px;font-weight:600;color:var(--muted);margin-bottom:1.5rem;line-height:1.6">Terry's logged that expense.<br/>Every cost saved = less tax to pay!</p>
+    <button class="btn btn-navy btn-full" onclick="logAnother()">Log another expense</button>
+    <button class="btn btn-outline btn-full" style="margin-top:10px" onclick="window.location.href='dashboard.html'">Back to dashboard</button>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item" onclick="window.location.href='dashboard.html'"><div class="nav-icon">🏠</div><div class="nav-item-label">Home</div></div>
+  <div class="nav-item" onclick="window.location.href='jobs.html'"><div class="nav-icon">📋</div><div class="nav-item-label">Invoices</div></div>
+  <div class="nav-item active" onclick="window.location.href='expenses.html'"><div class="nav-icon">💰</div><div class="nav-item-label">Expenses</div></div>
+  <div class="nav-item" onclick="window.location.href='tax.html'"><div class="nav-icon">📊</div><div class="nav-item-label">Tax</div></div>
+  <div class="nav-item" onclick="window.location.href='settings.html'"><div class="nav-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="js/supabase-client.js"></script>
+<script>
+var CATEGORIES = [
+  { name: 'Materials', icon: '🧱', color: '#FEF3C7' },
+  { name: 'Tools',     icon: '🔧', color: '#DBEAFE' },
+  { name: 'Fuel',      icon: '⛽', color: '#FEE2E2' },
+  { name: 'Mileage',   icon: '🚗', color: '#D1FAE5' },
+  { name: 'Workwear',  icon: '🦺', color: '#EDE9FE' },
+  { name: 'Equipment', icon: '⚙️', color: '#F3F4F6' },
+  { name: 'Parking',   icon: '🅿️', color: '#FEF3C7' },
+  { name: 'Food',      icon: '🥪', color: '#D1FAE5' },
+  { name: 'Other',     icon: '📦', color: '#F3F4F6' }
+];
+
+var selectedCat = '';
+var _userId = null;
+var today = new Date().toISOString().split('T')[0];
+
+// Build category grid
+function buildCategoryGrid() {
+  var grid = document.getElementById('categoryGrid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(function(cat) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cat-btn';
+    btn.innerHTML = '<span class="cat-icon">' + cat.icon + '</span><span class="cat-label">' + cat.name + '</span>';
+    btn.onclick = function() {
+      selectedCat = cat.name;
+      document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function updateClaimDisplay() {
+  var val = parseFloat(document.getElementById('expAmount').value) || 0;
+  var display = document.getElementById('claimDisplay');
+  display.classList.toggle('show', val > 0);
+  document.getElementById('claimAmount').textContent = '£' + val.toFixed(2);
+}
+
+async function checkCanAddExpense() {
+  try {
+    var sess = await _sb.auth.getSession();
+    if (!sess.data || !sess.data.session) return true;
+    var uid = sess.data.session.user.id;
+    var isPro = await checkIsPro(uid);
+    if (isPro) return true;
+    var expenses = await dbLoadExpenses(uid);
+    if (expenses.length >= 2) {
+      showPaywall('Free accounts are limited to 2 expenses. Upgrade to Pro for unlimited expense tracking!');
+      return false;
+    }
+    return true;
+  } catch(e) { return true; }
+}
+
+async function saveExpense() {
+  var canAdd = await checkCanAddExpense();
+  if (!canAdd) return;
+
+  var desc   = document.getElementById('expDesc').value.trim();
+  var amount = parseFloat(document.getElementById('expAmount').value);
+  var date   = document.getElementById('expDate').value;
+  var notes  = document.getElementById('expNotes').value.trim();
+
+  if (!desc)             { TerryBot.showToast('Please add a description'); return; }
+  if (!amount || amount <= 0) { TerryBot.showToast('Please enter an amount'); return; }
+  if (!selectedCat)      { TerryBot.showToast('Please pick a category'); return; }
+  if (!date)             { TerryBot.showToast('Please select a date'); return; }
+
+  var expense = TerryBot.addExpense({ desc, cat: selectedCat, amount, date });
+
+  if (_userId) {
+    dbSaveExpense(expense, _userId).catch(console.error);
+  }
+
+  document.getElementById('mainContent').classList.add('hidden');
+  document.getElementById('successScreen').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function logAnother() {
+  document.getElementById('expDesc').value = '';
+  document.getElementById('expAmount').value = '';
+  document.getElementById('expNotes').value = '';
+  document.getElementById('expDate').value = today;
+  document.getElementById('claimDisplay').classList.remove('show');
+  selectedCat = '';
+  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('selected'); });
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('successScreen').classList.add('hidden');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function buildExpenseList() {
+  var expenses = TerryBot.getExpenses();
+  var list = document.getElementById('expenseList');
+  if (!expenses || expenses.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:14px;font-weight:600">No expenses logged yet</div>';
+    return;
+  }
+  var recent = expenses.slice(0, 10);
+  list.innerHTML = recent.map(function(exp) {
+    var cat = CATEGORIES.find(function(c) { return c.name === exp.cat; }) || { icon: '📦', color: '#F3F4F6' };
+    return '<div class="expense-row">' +
+      '<div class="expense-icon" style="background:' + cat.color + '">' + cat.icon + '</div>' +
+      '<div class="expense-info">' +
+        '<div class="expense-desc">' + exp.desc + '</div>' +
+        '<div class="expense-cat">' + exp.cat + ' · ' + exp.date + '</div>' +
+      '</div>' +
+      '<div class="expense-amount">-£' + parseFloat(exp.amount).toFixed(2) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function buildSummary() {
+  var expenses = TerryBot.getExpenses();
+  var now = new Date(), m = now.getMonth(), y = now.getFullYear();
+  var monthTotal = 0, yearTotal = 0;
+  expenses.forEach(function(e) {
+    var d = new Date(e.date);
+    if (d.getFullYear() === y) {
+      yearTotal += e.amount;
+      if (d.getMonth() === m) monthTotal += e.amount;
+    }
+  });
+  document.getElementById('monthTotal').textContent = '£' + monthTotal.toFixed(0);
+  document.getElementById('yearTotal').textContent  = '£' + yearTotal.toFixed(0);
+  document.getElementById('taxSaved').textContent   = '£' + Math.round(yearTotal * 0.2).toFixed(0);
+}
+
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.replace('login.html');
+}
+
+async function initExpenses() {
+  var sess = await _sb.auth.getSession();
+  if (!sess.data || !sess.data.session) {
+    window.location.replace('login.html');
+    return;
+  }
+  _userId = sess.data.session.user.id;
+  clearDemoData();
+  var expenses = await dbLoadExpenses(_userId);
+  TerryBot.setExpenses(expenses);
+  buildCategoryGrid();
+  buildSummary();
+  buildExpenseList();
+  document.getElementById('expDate').value = today;
+}
+
+initExpenses();
+</script>
+</body>
+</html>
