@@ -108,7 +108,8 @@ function renderJobs() {
   var html = '';
   for (var i = 0; i < jobs.length; i++) {
     var job = jobs[i];
-    var actions = '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>';
+    var actions = '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>' +
+      '<button class="btn btn-sm btn-yellow" onclick="event.stopPropagation();showReminderModal(' + JSON.stringify(job).replace(/'/g, "\\'") + ')" style="margin-left:6px">🔔 Remind</button>';
     html += '<div class="job-card" onclick="window.location.href=\'invoice-view.html?id=' + job.id + '\'">' +
       '<div class="job-card-top">' +
         '<div>' +
@@ -170,5 +171,91 @@ async function signOut() {
 
 init();
 </script>
+<!-- REMINDER MODAL -->
+<div id="reminderModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:flex-end;justify-content:center">
+  <div style="background:white;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:1.5rem;animation:slideUp 0.3s ease">
+    <div style="width:40px;height:4px;background:#E5E7EB;border-radius:2px;margin:0 auto 1.25rem"></div>
+    <div style="font-size:18px;font-weight:900;color:var(--navy);margin-bottom:4px">Send a reminder</div>
+    <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:1.25rem" id="reminderInvoiceRef">Invoice #TB-001</div>
+
+    <div style="background:#F9FAFB;border-radius:14px;padding:1rem;margin-bottom:1.25rem;border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Message preview</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);line-height:1.7" id="reminderText"></div>
+    </div>
+
+    <button onclick="sendWhatsAppReminder()" class="btn btn-navy btn-full" style="margin-bottom:10px">
+      💬 Send via WhatsApp
+    </button>
+    <button onclick="sendEmailReminder()" class="btn btn-outline btn-full" style="margin-bottom:10px">
+      ✉️ Send via Email
+    </button>
+    <button onclick="closeReminderModal()" style="width:100%;padding:10px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<style>
+.btn-yellow { background: var(--yellow); color: var(--navy); }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+</style>
+
+<script>
+var _reminderJob = null;
+var _userProfile = null;
+
+async function loadProfile() {
+  var sess = await _sb.auth.getSession();
+  if (!sess.data || !sess.data.session) return;
+  var res = await _sb.from('profiles').select('name,business_name,phone,email').eq('id', sess.data.session.user.id).single();
+  if (res.data) _userProfile = res.data;
+}
+loadProfile();
+
+function getReminderText(job) {
+  var firstName = (job.name || 'there').split(' ')[0];
+  var bizName = (_userProfile && _userProfile.business_name) || 'us';
+  var amount = '£' + parseFloat(job.amount || 0).toFixed(2);
+  var invoiceId = job.id || '';
+  var due = job.due || '';
+  return 'Hi ' + firstName + ', just a friendly reminder that invoice ' + invoiceId + ' for ' + amount + ' is due for payment' + (due ? ' on ' + due : '') + '. If you have any questions please don't hesitate to get in touch. Many thanks, ' + bizName + '.';
+}
+
+function showReminderModal(job) {
+  _reminderJob = job;
+  var firstName = (job.name || 'there').split(' ')[0];
+  document.getElementById('reminderInvoiceRef').textContent = 'Invoice #' + job.id + ' · ' + (job.name || '') + ' · £' + parseFloat(job.amount || 0).toFixed(2);
+  document.getElementById('reminderText').textContent = getReminderText(job);
+  var modal = document.getElementById('reminderModal');
+  modal.style.display = 'flex';
+  modal.addEventListener('click', function(e) { if (e.target === modal) closeReminderModal(); });
+}
+
+function closeReminderModal() {
+  document.getElementById('reminderModal').style.display = 'none';
+  _reminderJob = null;
+}
+
+function sendWhatsAppReminder() {
+  if (!_reminderJob) return;
+  var phone = (_reminderJob.phone || '').replace(/\s+/g, '').replace(/^0/, '44');
+  var text = getReminderText(_reminderJob);
+  var url = phone
+    ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text)
+    : 'https://wa.me/?text=' + encodeURIComponent(text);
+  window.open(url, '_blank');
+  closeReminderModal();
+}
+
+function sendEmailReminder() {
+  if (!_reminderJob) return;
+  var email = _reminderJob.email || '';
+  var subject = 'Invoice ' + _reminderJob.id + ' — Payment Reminder';
+  var body = getReminderText(_reminderJob);
+  window.open('mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body), '_blank');
+  closeReminderModal();
+}
+</script>
+
 </body>
 </html>
