@@ -221,7 +221,7 @@ function getReminderText(job) {
   var amount = '£' + parseFloat(job.amount || 0).toFixed(2);
   var invoiceId = job.id || '';
   var due = job.due || '';
-  return 'Hi ' + firstName + ', just a friendly reminder that invoice ' + invoiceId + ' for ' + amount + ' is due for payment' + (due ? ' on ' + due : '') + '. If you have any questions please don't hesitate to get in touch. Many thanks, ' + bizName + '.';
+  return 'Hi ' + firstName + ', just a friendly reminder that invoice ' + invoiceId + ' for ' + amount + ' is due for payment' + (due ? ' on ' + due : '') + '. If you have any questions please do not hesitate to get in touch. Many thanks, ' + bizName + '.';
 }
 
 function showReminderModal(idx) {
