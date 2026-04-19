@@ -105,11 +105,14 @@ function renderJobs() {
   }
   empty.classList.add('hidden');
 
+  // Store jobs for reminder modal access by index
+  window._jobsList = jobs;
+
   var html = '';
   for (var i = 0; i < jobs.length; i++) {
     var job = jobs[i];
     var actions = '<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();window.location.href=\'invoice-view.html?id=' + job.id + '\'">View</button>' +
-      '<button class="btn btn-sm btn-yellow" onclick="event.stopPropagation();showReminderModal(' + JSON.stringify(job).replace(/'/g, "\\'") + ')" style="margin-left:6px">🔔 Remind</button>';
+      '<button class="btn btn-sm btn-yellow" onclick="event.stopPropagation();showReminderModal(' + i + ')" style="margin-left:6px">🔔 Remind</button>';
     html += '<div class="job-card" onclick="window.location.href=\'invoice-view.html?id=' + job.id + '\'">' +
       '<div class="job-card-top">' +
         '<div>' +
@@ -221,14 +224,15 @@ function getReminderText(job) {
   return 'Hi ' + firstName + ', just a friendly reminder that invoice ' + invoiceId + ' for ' + amount + ' is due for payment' + (due ? ' on ' + due : '') + '. If you have any questions please don't hesitate to get in touch. Many thanks, ' + bizName + '.';
 }
 
-function showReminderModal(job) {
+function showReminderModal(idx) {
+  var job = window._jobsList[idx];
+  if (!job) return;
   _reminderJob = job;
-  var firstName = (job.name || 'there').split(' ')[0];
   document.getElementById('reminderInvoiceRef').textContent = 'Invoice #' + job.id + ' · ' + (job.name || '') + ' · £' + parseFloat(job.amount || 0).toFixed(2);
   document.getElementById('reminderText').textContent = getReminderText(job);
   var modal = document.getElementById('reminderModal');
   modal.style.display = 'flex';
-  modal.addEventListener('click', function(e) { if (e.target === modal) closeReminderModal(); });
+  modal.onclick = function(e) { if (e.target === modal) closeReminderModal(); };
 }
 
 function closeReminderModal() {
