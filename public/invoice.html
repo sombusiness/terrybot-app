@@ -521,7 +521,11 @@ async function downloadPDF() {
       });
       var canvas = document.createElement('canvas');
       canvas.width = img.width; canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0);
+      var ctx = canvas.getContext('2d');
+      // Fill with brand colour so transparent PNG areas match the navy header
+      ctx.fillStyle = brandColour;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
       var imgData = canvas.toDataURL('image/png');
       var logoW = 40, logoH = (img.height / img.width) * logoW;
       if (logoH > 18) { logoH = 18; logoW = (img.width / img.height) * logoH; }
