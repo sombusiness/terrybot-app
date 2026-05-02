@@ -276,7 +276,7 @@ async function uploadLogo(userId) {
   var { error } = await _sb.storage.from('logos').upload(path, _logoFile, { upsert: true });
   if (error) { console.error('Logo upload error:', error); return _existingLogoUrl; }
   var { data: urlData } = _sb.storage.from('logos').getPublicUrl(path);
-  return urlData.publicUrl;
+  return urlData.publicUrl + '?t=' + Date.now();
 }
 
 async function removeLogo() {
