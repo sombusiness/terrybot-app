@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "co.uk.terrybot",
+    "sha256_cert_fingerprints":
+    ["8D:2B:09:B0:2C:90:FF:AC:40:25:43:7A:BB:0A:B3:83:66:57:3E:51:1E:74:AC:3D:76:C0:69:35:B1:AB:4D:6C"]
+  }
+}]
