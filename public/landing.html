@@ -9,6 +9,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#1B2B4B"/>
+
+<script>
+  // If running as installed PWA, skip marketing page and go straight to login
+  if (window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true) {
+    window.location.replace('login.html');
+  }
+</script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -28,16 +37,18 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);o
 .nav-brand{color:white;font-size:21px;font-weight:900}
 .nav-brand span{color:var(--yellow)}
 .nav-tagline{color:rgba(255,255,255,0.5);font-size:11px;font-weight:700}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-signin{background:transparent;border:1.5px solid rgba(255,255,255,0.3);color:white;font-size:13px;font-weight:800;padding:7px 16px;border-radius:999px;text-decoration:none;white-space:nowrap;transition:all 0.2s}
+.nav-signin:hover{border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.08)}
 .nav-cta{background:var(--yellow);color:var(--navy);font-size:13px;font-weight:800;padding:8px 18px;border-radius:999px;text-decoration:none;white-space:nowrap;transition:all 0.2s}
 .nav-cta:hover{background:var(--yellow-dark);transform:scale(1.04)}
+@media(max-width:420px){.nav-signin{display:none}}
 
 /* ── PLAY BADGE ── */
 .play-badge-link{display:inline-block;text-decoration:none}
 .play-badge-img{display:block;height:60px;width:auto;max-width:220px}
 .play-badge-center{display:flex;justify-content:center;margin-bottom:10px}
-@media(max-width:520px){
-  .play-badge-img{height:52px;max-width:190px}
-}
+@media(max-width:520px){.play-badge-img{height:52px;max-width:190px}}
 
 /* ── HERO ── */
 .hero{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding:2rem 1.5rem 0}
@@ -72,6 +83,13 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);o
 .hero-stat{background:rgba(255,255,255,0.04);padding:1.25rem 0.75rem;text-align:center}
 .hero-stat-value{font-size:24px;font-weight:900;color:var(--yellow)}
 .hero-stat-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.5);margin-top:3px}
+
+/* ── SIGNIN STRIP ── */
+.signin-strip{background:#F0F4FF;border-bottom:1px solid #D6E0FF;padding:0.85rem 1.5rem;text-align:center}
+.signin-strip-inner{max-width:480px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.signin-strip-text{font-size:14px;font-weight:700;color:var(--navy)}
+.btn-signin-strip{background:var(--navy);color:white;font-size:13px;font-weight:800;padding:8px 20px;border-radius:999px;text-decoration:none;transition:all 0.2s}
+.btn-signin-strip:hover{background:var(--navy-light)}
 
 /* ── PINT BANNER ── */
 .pint-banner{background:var(--yellow);padding:1.25rem 1.5rem;text-align:center}
@@ -122,7 +140,7 @@ section{padding:4rem 1.5rem}
 .feat-title{font-size:14px;font-weight:800;color:white;margin-bottom:4px}
 .feat-desc{font-size:12px;font-weight:600;color:rgba(255,255,255,0.55);line-height:1.5}
 
-/* ── TESTIMONIALS / SOCIAL PROOF ── */
+/* ── TESTIMONIALS ── */
 .proof{background:#F9FAFB}
 .proof-cards{display:flex;flex-direction:column;gap:12px}
 .proof-card{background:white;border-radius:16px;border:1.5px solid var(--border);padding:1.25rem}
@@ -160,13 +178,8 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
 @keyframes floatUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-@keyframes slideIn{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
-@keyframes countUp{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
-
 .float{animation:float 3.5s ease-in-out infinite}
 .pulse{animation:pulse 2.5s ease-in-out infinite}
-
-/* Scroll reveal */
 .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.6s ease,transform 0.6s ease}
 .reveal.visible{opacity:1;transform:translateY(0)}
 .reveal-left{opacity:0;transform:translateX(-30px);transition:opacity 0.6s ease,transform 0.6s ease}
@@ -174,7 +187,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
 
 /* ── TICKER ── */
 .ticker-wrap{background:rgba(0,0,0,0.2);overflow:hidden;padding:10px 0;position:relative;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;margin-top:2rem}
-.ticker{display:flex;gap:0;animation:ticker 20s linear infinite;width:max-content}
+.ticker{display:flex;animation:ticker 20s linear infinite;width:max-content}
 .ticker-item{white-space:nowrap;padding:0 2rem;font-size:13px;font-weight:800;color:rgba(255,255,255,0.5)}
 .ticker-item span{color:var(--yellow)}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
@@ -191,7 +204,10 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </a>
-  <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="nav-cta pulse" target="_blank" rel="noopener noreferrer">Get it on Google Play</a>
+  <div class="nav-right">
+    <a href="login.html" class="nav-signin">Sign in</a>
+    <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="nav-cta pulse" target="_blank" rel="noopener noreferrer">Get the app</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -204,7 +220,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
         <p class="hero-sub">TerryBot sorts your <strong>invoices, expenses and tax</strong> in minutes — so you can get back on the tools. No spreadsheets. No stress. No accountant needed.</p>
         <div class="hero-ctas">
           <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="play-badge-link" target="_blank" rel="noopener noreferrer" aria-label="Get TerryBot on Google Play">
-            <img src="images/google-play-badge.jpg" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="eager"/>
+            <img src="images/google-play-badge.png" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="eager"/>
           </a>
           <a href="pricing.html" class="btn-hero-secondary">💷 See pricing — less than a pint</a>
         </div>
@@ -215,8 +231,8 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       </div>
     </div>
 
-    <!-- SCROLLING TICKER -->
-    <div class="ticker-wrap" style="margin-top:2rem">
+    <!-- TICKER -->
+    <div class="ticker-wrap">
       <div class="ticker">
         <span class="ticker-item">📋 Invoice sent in <span>60 seconds</span></span>
         <span class="ticker-item">💰 Expense logged in seconds</span>
@@ -234,20 +250,19 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
 
   <!-- HERO STATS -->
   <div class="hero-stats">
-    <div class="hero-stat">
-      <div class="hero-stat-value">60s</div>
-      <div class="hero-stat-label">Invoice created</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-value">£6.99</div>
-      <div class="hero-stat-label">Per month</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-value">100%</div>
-      <div class="hero-stat-label">Built for trades</div>
-    </div>
+    <div class="hero-stat"><div class="hero-stat-value">60s</div><div class="hero-stat-label">Invoice created</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">£6.99</div><div class="hero-stat-label">Per month</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">100%</div><div class="hero-stat-label">Built for trades</div></div>
   </div>
 </section>
+
+<!-- ALREADY HAVE AN ACCOUNT STRIP -->
+<div class="signin-strip">
+  <div class="signin-strip-inner">
+    <span class="signin-strip-text">Already have a TerryBot account?</span>
+    <a href="login.html" class="btn-signin-strip">Sign in →</a>
+  </div>
+</div>
 
 <!-- PINT BANNER -->
 <div class="pint-banner">
@@ -272,31 +287,19 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
     <div class="problem-cards">
       <div class="problem-card reveal" style="transition-delay:0.1s">
         <div class="problem-icon">📝</div>
-        <div>
-          <div class="problem-title">Invoices piling up on the kitchen table</div>
-          <div class="problem-desc">Scribbled on bits of paper, stuffed in the van, chased by irate customers. Sound about right?</div>
-        </div>
+        <div><div class="problem-title">Invoices piling up on the kitchen table</div><div class="problem-desc">Scribbled on bits of paper, stuffed in the van, chased by irate customers. Sound about right?</div></div>
       </div>
       <div class="problem-card reveal" style="transition-delay:0.2s">
         <div class="problem-icon">😰</div>
-        <div>
-          <div class="problem-title">Tax return panic every January</div>
-          <div class="problem-desc">Scrambling for receipts from 11 months ago. Paying an accountant £500 for something you could've done in January with five minutes a week.</div>
-        </div>
+        <div><div class="problem-title">Tax return panic every January</div><div class="problem-desc">Scrambling for receipts from 11 months ago. Paying an accountant £500 for something you could've done in January with five minutes a week.</div></div>
       </div>
       <div class="problem-card reveal" style="transition-delay:0.3s">
         <div class="problem-icon">📱</div>
-        <div>
-          <div class="problem-title">Customers asking "where's my invoice?"</div>
-          <div class="problem-desc">You've done the job, done a great job, but getting paid is a whole other mission. Awkward texts. Ignored calls. Money sitting in limbo.</div>
-        </div>
+        <div><div class="problem-title">Customers asking "where's my invoice?"</div><div class="problem-desc">You've done the job, done a great job, but getting paid is a whole other mission. Awkward texts. Ignored calls. Money sitting in limbo.</div></div>
       </div>
       <div class="problem-card reveal" style="transition-delay:0.4s">
         <div class="problem-icon">🧾</div>
-        <div>
-          <div class="problem-title">Receipts in the glovebox going mouldy</div>
-          <div class="problem-desc">Every receipt you miss is money HMRC keeps that should be back in your pocket. Fuel, tools, materials — it all adds up.</div>
-        </div>
+        <div><div class="problem-title">Receipts in the glovebox going mouldy</div><div class="problem-desc">Every receipt you miss is money HMRC keeps that should be back in your pocket. Fuel, tools, materials — it all adds up.</div></div>
       </div>
     </div>
     <div class="problem-answer reveal" style="transition-delay:0.5s">
@@ -317,32 +320,23 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
     <div class="steps">
       <div class="step reveal" style="transition-delay:0.1s">
         <div class="step-num">1</div>
-        <div class="step-content">
-          <div class="step-title">Tell Terry about the job</div>
-          <div class="step-desc">Customer name, address, what you did, and what it cost. Terry turns it into a professional invoice in seconds — not minutes.</div>
-        </div>
+        <div class="step-content"><div class="step-title">Tell Terry about the job</div><div class="step-desc">Customer name, address, what you did, and what it cost. Terry turns it into a professional invoice in seconds — not minutes.</div></div>
         <div class="step-emoji">📋</div>
       </div>
       <div class="step reveal" style="transition-delay:0.2s">
         <div class="step-num">2</div>
-        <div class="step-content">
-          <div class="step-title">Send it — straight from the van</div>
-          <div class="step-desc">WhatsApp it to the customer, download the PDF, or email it — right from your phone. Job done before you've even started the engine.</div>
-        </div>
+        <div class="step-content"><div class="step-title">Send it — straight from the van</div><div class="step-desc">WhatsApp it to the customer, download the PDF, or email it — right from your phone. Job done before you've even started the engine.</div></div>
         <div class="step-emoji">💬</div>
       </div>
       <div class="step reveal" style="transition-delay:0.3s">
         <div class="step-num">3</div>
-        <div class="step-content">
-          <div class="step-title">Terry keeps track of everything</div>
-          <div class="step-desc">Expenses, receipts, overdue invoices, tax estimate — Terry's on it 24/7. No spreadsheets. No stress. Just more time on the tools.</div>
-        </div>
+        <div class="step-content"><div class="step-title">Terry keeps track of everything</div><div class="step-desc">Expenses, receipts, overdue invoices, tax estimate — Terry's on it 24/7. No spreadsheets. No stress. Just more time on the tools.</div></div>
         <div class="step-emoji">📊</div>
       </div>
     </div>
     <div class="reveal" style="margin-top:2rem;display:flex;justify-content:center">
       <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="play-badge-link" target="_blank" rel="noopener noreferrer" aria-label="Get TerryBot on Google Play">
-        <img src="images/google-play-badge.jpg" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="lazy"/>
+        <img src="images/google-play-badge.png" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="lazy"/>
       </a>
     </div>
   </div>
@@ -357,36 +351,12 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       <p class="section-sub">No faff. No jargon. Just the stuff that matters.</p>
     </div>
     <div class="feat-grid">
-      <div class="feat-card reveal" style="transition-delay:0.1s">
-        <div class="feat-icon">📋</div>
-        <div class="feat-title">Professional invoices</div>
-        <div class="feat-desc">Create and send in 60 seconds. PDF download included.</div>
-      </div>
-      <div class="feat-card reveal" style="transition-delay:0.15s">
-        <div class="feat-icon">💰</div>
-        <div class="feat-title">Log expenses fast</div>
-        <div class="feat-desc">Add expenses in seconds — category, amount, date. All saved to the cloud instantly.</div>
-      </div>
-      <div class="feat-card reveal" style="transition-delay:0.2s">
-        <div class="feat-icon">📊</div>
-        <div class="feat-title">Live tax estimate</div>
-        <div class="feat-desc">Always know roughly what you owe HMRC. No nasty surprises.</div>
-      </div>
-      <div class="feat-card reveal" style="transition-delay:0.25s">
-        <div class="feat-icon">💬</div>
-        <div class="feat-title">WhatsApp sharing</div>
-        <div class="feat-desc">Send invoices via WhatsApp in one tap. Customers love it.</div>
-      </div>
-      <div class="feat-card reveal" style="transition-delay:0.3s">
-        <div class="feat-icon">🔔</div>
-        <div class="feat-title">Chase payments</div>
-        <div class="feat-desc">Overdue invoice? Terry reminds you and sends the chaser.</div>
-      </div>
-      <div class="feat-card reveal" style="transition-delay:0.35s">
-        <div class="feat-icon">📱</div>
-        <div class="feat-title">Works offline</div>
-        <div class="feat-desc">No signal on site? No problem. Terry works without the internet.</div>
-      </div>
+      <div class="feat-card reveal" style="transition-delay:0.1s"><div class="feat-icon">📋</div><div class="feat-title">Professional invoices</div><div class="feat-desc">Create and send in 60 seconds. PDF download included.</div></div>
+      <div class="feat-card reveal" style="transition-delay:0.15s"><div class="feat-icon">💰</div><div class="feat-title">Log expenses fast</div><div class="feat-desc">Add expenses in seconds — category, amount, date. Saved to the cloud instantly.</div></div>
+      <div class="feat-card reveal" style="transition-delay:0.2s"><div class="feat-icon">📊</div><div class="feat-title">Live tax estimate</div><div class="feat-desc">Always know roughly what you owe HMRC. No nasty surprises.</div></div>
+      <div class="feat-card reveal" style="transition-delay:0.25s"><div class="feat-icon">💬</div><div class="feat-title">WhatsApp sharing</div><div class="feat-desc">Send invoices via WhatsApp in one tap. Customers love it.</div></div>
+      <div class="feat-card reveal" style="transition-delay:0.3s"><div class="feat-icon">🔔</div><div class="feat-title">Chase payments</div><div class="feat-desc">Overdue invoice? Terry reminds you and sends the chaser.</div></div>
+      <div class="feat-card reveal" style="transition-delay:0.35s"><div class="feat-icon">📱</div><div class="feat-title">Works offline</div><div class="feat-desc">No signal on site? No problem. Terry works without the internet.</div></div>
     </div>
   </div>
 </section>
@@ -402,35 +372,17 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       <div class="proof-card reveal" style="transition-delay:0.1s">
         <div class="proof-stars">★★★★★</div>
         <p class="proof-text">"Used to spend Sunday nights doing invoices. Now it takes me five minutes on Monday morning in the van. Terry's class."</p>
-        <div class="proof-author">
-          <div class="proof-avatar">DM</div>
-          <div>
-            <div class="proof-name">Dave M.</div>
-            <div class="proof-trade">Plumber · Brentwood, Essex</div>
-          </div>
-        </div>
+        <div class="proof-author"><div class="proof-avatar">DM</div><div><div class="proof-name">Dave M.</div><div class="proof-trade">Plumber · Brentwood, Essex</div></div></div>
       </div>
       <div class="proof-card reveal" style="transition-delay:0.2s">
         <div class="proof-stars">★★★★★</div>
         <p class="proof-text">"My accountant used to charge me £400 a year just to sort my Self Assessment. Now I do it myself with TerryBot and it takes an afternoon."</p>
-        <div class="proof-author">
-          <div class="proof-avatar">JT</div>
-          <div>
-            <div class="proof-name">Jason T.</div>
-            <div class="proof-trade">Roofer · Chelmsford</div>
-          </div>
-        </div>
+        <div class="proof-author"><div class="proof-avatar">JT</div><div><div class="proof-name">Jason T.</div><div class="proof-trade">Roofer · Chelmsford</div></div></div>
       </div>
       <div class="proof-card reveal" style="transition-delay:0.3s">
         <div class="proof-stars">★★★★★</div>
         <p class="proof-text">"Finally an app that doesn't feel like it was made for some bloke in a suit. Terry gets it. Simple, fast, does the job."</p>
-        <div class="proof-author">
-          <div class="proof-avatar">SR</div>
-          <div>
-            <div class="proof-name">Steve R.</div>
-            <div class="proof-trade">Electrician · Romford</div>
-          </div>
-        </div>
+        <div class="proof-author"><div class="proof-avatar">SR</div><div><div class="proof-name">Steve R.</div><div class="proof-trade">Electrician · Romford</div></div></div>
       </div>
     </div>
   </div>
@@ -451,13 +403,11 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       </div>
       <div class="play-badge-center">
         <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="play-badge-link" target="_blank" rel="noopener noreferrer" aria-label="Get TerryBot on Google Play">
-          <img src="images/google-play-badge.jpg" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="lazy"/>
+          <img src="images/google-play-badge.png" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="lazy"/>
         </a>
       </div>
       <a href="pricing.html" class="btn-cta-outline">See full pricing →</a>
-      <div class="guarantee">
-        🔒 No contract &nbsp;·&nbsp; Cancel any time &nbsp;·&nbsp; 14-day money back guarantee
-      </div>
+      <div class="guarantee">🔒 No contract &nbsp;·&nbsp; Cancel any time &nbsp;·&nbsp; 14-day money back guarantee</div>
     </div>
   </div>
 </section>
@@ -471,6 +421,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
   <div class="footer-tagline">Your AI mate for the trades · Built in the UK 🇬🇧</div>
   <div class="footer-links">
     <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" target="_blank" rel="noopener noreferrer">Google Play</a>
+    <a href="login.html">Sign in</a>
     <a href="pricing.html">Pricing</a>
     <a href="privacy.html">Privacy Policy</a>
     <a href="terms.html">Terms &amp; Conditions</a>
@@ -480,15 +431,11 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
 </footer>
 
 <script>
-// Scroll reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
+    if (entry.isIntersecting) entry.target.classList.add('visible');
   });
 }, { threshold: 0.12 });
-
 document.querySelectorAll('.reveal, .reveal-left').forEach(el => observer.observe(el));
 </script>
 </body>
