@@ -31,6 +31,14 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);o
 .nav-cta{background:var(--yellow);color:var(--navy);font-size:13px;font-weight:800;padding:8px 18px;border-radius:999px;text-decoration:none;white-space:nowrap;transition:all 0.2s}
 .nav-cta:hover{background:var(--yellow-dark);transform:scale(1.04)}
 
+/* ── PLAY BADGE ── */
+.play-badge-link{display:inline-block;text-decoration:none}
+.play-badge-img{display:block;height:60px;width:auto;max-width:220px}
+.play-badge-center{display:flex;justify-content:center;margin-bottom:10px}
+@media(max-width:520px){
+  .play-badge-img{height:52px;max-width:190px}
+}
+
 /* ── HERO ── */
 .hero{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding:2rem 1.5rem 0}
 .hero::before{content:'';position:absolute;top:-40%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(245,197,24,0.12) 0%,transparent 70%);pointer-events:none}
@@ -47,16 +55,13 @@ body{font-family:'Nunito',sans-serif;background:var(--white);color:var(--text);o
   .hero-pint{text-align:center}
   .hero-terry{width:200px!important;margin:0 auto}
   .hero-ctas{align-items:center}
-  .btn-hero-primary,.btn-hero-secondary{max-width:320px;width:100%}
 }
 .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(245,197,24,0.15);border:1px solid rgba(245,197,24,0.3);border-radius:999px;padding:6px 16px;font-size:13px;font-weight:800;color:var(--yellow);margin-bottom:1.5rem;animation:fadeDown 0.6s ease both;align-self:flex-start}
 .hero h1{font-size:clamp(28px,5vw,42px);font-weight:900;color:white;line-height:1.15;margin-bottom:1rem;animation:fadeDown 0.7s 0.1s ease both}
 .hero h1 span{color:var(--yellow)}
 .hero-sub{font-size:16px;font-weight:600;color:rgba(255,255,255,0.75);line-height:1.7;margin-bottom:1.5rem;animation:fadeDown 0.7s 0.2s ease both}
 .hero-sub strong{color:white}
-.hero-ctas{display:flex;flex-direction:column;gap:12px;width:100%;animation:fadeDown 0.7s 0.3s ease both;margin-bottom:1.5rem}
-.btn-hero-primary{background:var(--yellow);color:var(--navy);font-size:17px;font-weight:900;padding:16px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 20px rgba(245,197,24,0.35)}
-.btn-hero-primary:hover{background:var(--yellow-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(245,197,24,0.4)}
+.hero-ctas{display:flex;flex-direction:column;gap:14px;width:100%;animation:fadeDown 0.7s 0.3s ease both;margin-bottom:1.5rem}
 .btn-hero-secondary{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);font-size:15px;font-weight:800;padding:13px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid rgba(255,255,255,0.15);transition:all 0.2s}
 .btn-hero-secondary:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.3)}
 .hero-pint{font-size:12px;font-weight:700;color:rgba(255,255,255,0.45);animation:fadeDown 0.7s 0.4s ease both;margin-top:4px}
@@ -135,9 +140,7 @@ section{padding:4rem 1.5rem}
 .price-big{font-size:64px;font-weight:900;color:var(--navy);line-height:1}
 .price-per{font-size:20px;font-weight:700;color:rgba(27,43,75,0.6)}
 .price-context{font-size:15px;font-weight:700;color:rgba(27,43,75,0.7);margin:8px 0 1.5rem}
-.btn-cta-dark{background:var(--navy);color:white;font-size:17px;font-weight:900;padding:16px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;box-shadow:0 4px 20px rgba(27,43,75,0.25);width:100%;margin-bottom:10px}
-.btn-cta-dark:hover{background:var(--navy-light);transform:translateY(-2px)}
-.btn-cta-outline{background:transparent;color:var(--navy);font-size:15px;font-weight:800;padding:13px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;border:2px solid rgba(27,43,75,0.3);transition:all 0.2s;width:100%}
+.btn-cta-outline{background:transparent;color:var(--navy);font-size:15px;font-weight:800;padding:13px 24px;border-radius:14px;text-decoration:none;display:flex;align-items:center;justify-content:center;border:2px solid rgba(27,43,75,0.3);transition:all 0.2s;width:100%;margin-top:10px}
 .btn-cta-outline:hover{border-color:var(--navy);background:rgba(27,43,75,0.05)}
 .guarantee{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:rgba(27,43,75,0.6);margin-top:1rem;justify-content:center}
 
@@ -188,7 +191,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
       <div class="nav-tagline">Trade invoices &amp; tax made easy</div>
     </div>
   </a>
-  <a href="dashboard.html" class="nav-cta pulse">Get started free →</a>
+  <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="nav-cta pulse" target="_blank" rel="noopener noreferrer">Get it on Google Play</a>
 </nav>
 
 <!-- HERO -->
@@ -200,7 +203,9 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
         <h1>Stop drowning in <span>paperwork.</span> Start getting paid.</h1>
         <p class="hero-sub">TerryBot sorts your <strong>invoices, expenses and tax</strong> in minutes — so you can get back on the tools. No spreadsheets. No stress. No accountant needed.</p>
         <div class="hero-ctas">
-          <a href="signup.html" class="btn-hero-primary">🔨 Get started free</a>
+          <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="play-badge-link" target="_blank" rel="noopener noreferrer" aria-label="Get TerryBot on Google Play">
+            <img src="images/google-play-badge.jpg" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="eager"/>
+          </a>
           <a href="pricing.html" class="btn-hero-secondary">💷 See pricing — less than a pint</a>
         </div>
         <p class="hero-pint">Pro plan from just <span>£6.99/month</span> · Cancel any time · No contract</p>
@@ -335,8 +340,10 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
         <div class="step-emoji">📊</div>
       </div>
     </div>
-    <div class="reveal" style="margin-top:2rem;text-align:center">
-      <a href="signup.html" class="btn-hero-primary" style="display:inline-flex;width:auto;padding:14px 28px;text-decoration:none">🔨 Try it now — it's free</a>
+    <div class="reveal" style="margin-top:2rem;display:flex;justify-content:center">
+      <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="play-badge-link" target="_blank" rel="noopener noreferrer" aria-label="Get TerryBot on Google Play">
+        <img src="images/google-play-badge.jpg" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="lazy"/>
+      </a>
     </div>
   </div>
 </section>
@@ -442,7 +449,11 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
         </div>
         <div class="price-context">Or £49.99/year — saves you £33.89. That's basically 5 pints back in your pocket.</div>
       </div>
-      <a href="signup.html" class="btn-cta-dark">🔨 Get started free — no card needed</a>
+      <div class="play-badge-center">
+        <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" class="play-badge-link" target="_blank" rel="noopener noreferrer" aria-label="Get TerryBot on Google Play">
+          <img src="images/google-play-badge.jpg" alt="Get it on Google Play" class="play-badge-img" width="220" height="60" loading="lazy"/>
+        </a>
+      </div>
       <a href="pricing.html" class="btn-cta-outline">See full pricing →</a>
       <div class="guarantee">
         🔒 No contract &nbsp;·&nbsp; Cancel any time &nbsp;·&nbsp; 14-day money back guarantee
@@ -459,7 +470,7 @@ footer{background:var(--navy);padding:2.5rem 1.5rem;text-align:center}
   </div>
   <div class="footer-tagline">Your AI mate for the trades · Built in the UK 🇬🇧</div>
   <div class="footer-links">
-    <a href="dashboard.html">App</a>
+    <a href="https://play.google.com/store/apps/details?id=co.uk.terrybot" target="_blank" rel="noopener noreferrer">Google Play</a>
     <a href="pricing.html">Pricing</a>
     <a href="privacy.html">Privacy Policy</a>
     <a href="terms.html">Terms &amp; Conditions</a>
