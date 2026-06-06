@@ -2,7 +2,7 @@
   "name": "TerryBot — Trade invoices & tax made easy",
   "short_name": "TerryBot",
   "description": "Your AI-powered business assistant for UK tradesmen. Invoices, expenses, and tax — sorted.",
-  "start_url": "/index.html",
+  "start_url": "/login.html",
   "display": "standalone",
   "background_color": "#1B2B4B",
   "theme_color": "#1B2B4B",
