@@ -1,13 +1,15 @@
-// api/stripe-webhook.js
-// Vercel serverless function — handles Stripe webhook events
+import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { createClient } = require("@supabase/supabase-js");
-
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 );
+
+export const config = {
+  api: { bodyParser: false }
+};
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -15,11 +17,16 @@ export default async function handler(req, res) {
   }
 
   const sig = req.headers["stripe-signature"];
-  let event;
 
+  // Read raw body as buffer
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  const rawBody = Buffer.concat(chunks);
+
+  let event;
   try {
     event = stripe.webhooks.constructEvent(
-      req.body,
+      rawBody,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
@@ -34,7 +41,6 @@ export default async function handler(req, res) {
         const session = event.data.object;
         const email = session.customer_details?.email;
         if (email) {
-          // Find user by email and mark as pro
           const { data: users } = await supabase.auth.admin.listUsers();
           const user = users?.users?.find(u => u.email === email);
           if (user) {
@@ -51,15 +57,11 @@ export default async function handler(req, res) {
 
       case "customer.subscription.deleted": {
         const sub = event.data.object;
-        // Find profile by stripe customer id and remove pro
         const { data: profile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("stripe_customer_id", sub.customer)
-          .single();
+          .from("profiles").select("id")
+          .eq("stripe_customer_id", sub.customer).single();
         if (profile) {
-          await supabase
-            .from("profiles")
+          await supabase.from("profiles")
             .update({ is_pro: false, subscription_id: null })
             .eq("id", profile.id);
         }
@@ -70,13 +72,10 @@ export default async function handler(req, res) {
         const sub = event.data.object;
         const isActive = sub.status === "active";
         const { data: profile } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("stripe_customer_id", sub.customer)
-          .single();
+          .from("profiles").select("id")
+          .eq("stripe_customer_id", sub.customer).single();
         if (profile) {
-          await supabase
-            .from("profiles")
+          await supabase.from("profiles")
             .update({ is_pro: isActive })
             .eq("id", profile.id);
         }
@@ -90,7 +89,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "Handler failed" });
   }
 }
-
-export const config = {
-  api: { bodyParser: false }
-};
